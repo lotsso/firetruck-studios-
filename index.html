@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel dostępu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0b0b0f;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .box {
+            width: min(90%, 420px);
+            padding: 35px;
+            background: #15151c;
+            border: 1px solid #292936;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,.4);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 15px 0;
+            border: 1px solid #333342;
+            border-radius: 10px;
+            background: #0e0e13;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 10px;
+            background: #5865f2;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #4752c4;
+        }
+        .error {
+            color: #ff6b6b;
+            margin-top: 15px;
+        }
+        .success {
+            color: #6bff9b;
+        }
+        .hidden {
+            display: none;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #aaa;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="box" id="loginBox">
+    <h1>🔒 Dostęp chroniony</h1>
+    <p>Podaj kod dostępu.</p>
+    <input
+        type="password"
+        id="code"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="Kod dostępu"
+        maxlength="6"
+    >
+    <button onclick="unlock()">
+        Odblokuj
+    </button>
+    <div class="error" id="error"></div>
+</div>
+<div class="box hidden" id="contentBox">
+    <h1 class="success">✓ Odblokowano</h1>
+    <p id="randomText"></p>
+    <a href="#" onclick="logout()">
+        Wyloguj
+    </a>
+</div>
+<script>
+    /*
+     * UWAGA:
+     * Wersja HTML/JS NIE chroni kodu przed podejrzeniem.
+     * Kod znajduje się w JavaScript.
+     */
+    const ACCESS_CODE = "200192";
+    const texts = [
+        "Witaj. Dostęp został przyznany.",
+        "Dzisiaj jest dobry dzień na napisanie czegoś ciekawego.",
+        "System działa poprawnie.",
+        "PHP zostało zastąpione wersją frontendową.",
+        "Ten komunikat został wybrany losowo."
+    ];
+    let attempts = 0;
+    const maxAttempts = 5;
+    function unlock() {
+        const input = document.getElementById("code");
+        const error = document.getElementById("error");
+        if (input.value === ACCESS_CODE) {
+            document.getElementById("loginBox").classList.add("hidden");
+            document.getElementById("contentBox").classList.remove("hidden");
+            const random =
+                texts[Math.floor(Math.random() * texts.length)];
+            document.getElementById("randomText").textContent = random;
+            sessionStorage.setItem("authenticated", "true");
+        } else {
+            attempts++;
+            if (attempts >= maxAttempts) {
+                error.textContent =
+                    "Za dużo błędnych prób. Odśwież stronę.";
+            } else {
+                error.textContent =
+                    `Nieprawidłowy kod. Pozostało prób: ${maxAttempts - attempts}.`;
+            }
+        }
+    }
+    function logout() {
+        sessionStorage.removeItem("authenticated");
+        document.getElementById("contentBox")
+            .classList.add("hidden");
+        document.getElementById("loginBox")
+            .classList.remove("hidden");
+        document.getElementById("code").value = "";
+    }
+    // Przywrócenie sesji
+    if (sessionStorage.getItem("authenticated") === "true") {
+        document.getElementById("loginBox")
+            .classList.add("hidden");
+        document.getElementById("contentBox")
+            .classList.remove("hidden");
+        const random =
+            texts[Math.floor(Math.random() * texts.length)];
+        document.getElementById("randomText").textContent = random;
+    }
+</script>
+</body>
+</html>
