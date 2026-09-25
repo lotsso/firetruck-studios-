@@ -25,11 +25,9 @@
         </button>
     </header>
 
-
-    <div id="status" class="status">
+    <div id="status" class="status loading">
         Ładowanie danych...
     </div>
-
 
     <section class="cards">
 
@@ -40,14 +38,12 @@
             <div class="description">Gracze online</div>
         </div>
 
-
         <div class="card">
             <div class="card-icon">📅</div>
             <div class="label">DAU</div>
             <div id="dau" class="value">—</div>
             <div class="description">Aktywni użytkownicy</div>
         </div>
-
 
         <div class="card">
             <div class="card-icon">👀</div>
@@ -56,7 +52,6 @@
             <div class="description">Łączne wizyty</div>
         </div>
 
-
         <div class="card">
             <div class="card-icon">💰</div>
             <div class="label">DAILY REVENUE</div>
@@ -64,14 +59,12 @@
             <div class="description">Dzisiejszy przychód</div>
         </div>
 
-
         <div class="card">
             <div class="card-icon">❤️</div>
             <div class="label">LIKES</div>
             <div id="likes" class="value">—</div>
             <div class="description">Polubienia</div>
         </div>
-
 
         <div class="card">
             <div class="card-icon">📊</div>
@@ -81,7 +74,6 @@
         </div>
 
     </section>
-
 
     <section class="wide-grid">
 
@@ -125,7 +117,6 @@
 
         </div>
 
-
         <div class="panel">
 
             <div class="panel-header">
@@ -155,7 +146,6 @@
 
     </section>
 
-
     <footer>
         <span>Roblox Analytics Dashboard</span>
         <span id="lastUpdate">—</span>
@@ -163,8 +153,10 @@
 
 </div>
 
-
 <script>
+
+const API_URL = "/api/stats";
+
 
 async function loadStats() {
 
@@ -178,106 +170,203 @@ async function loadStats() {
 
     try {
 
-        const response = await fetch("/api/stats", {
-            cache: "no-store"
+        const response = await fetch(API_URL, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Accept": "application/json"
+            }
         });
+
 
         const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || "Błąd API");
+
+        // Pokazuje pełną odpowiedź API w konsoli
+        console.log("ROBLOX API DATA:", data);
+
+
+        if (!response.ok || data.success === false) {
+
+            throw new Error(
+                data.error || `Błąd API (${response.status})`
+            );
+
         }
 
 
-        // =========================
-        // PODSTAWOWE STATYSTYKI
-        // =========================
+        // ==========================================
+        // GAME NAME
+        // ==========================================
+
+        document.getElementById("gameName").textContent =
+            data.gameName ?? "—";
+
+
+        // ==========================================
+        // CCU
+        // ==========================================
 
         document.getElementById("ccu").textContent =
             formatNumber(data.ccu);
 
+
+        // ==========================================
+        // DAU
+        // ==========================================
+
         document.getElementById("dau").textContent =
             formatNumber(data.dau);
+
+
+        // ==========================================
+        // VISITS
+        // ==========================================
 
         document.getElementById("visits").textContent =
             formatNumber(data.visits);
 
-        document.getElementById("revenue").textContent =
-            formatNumber(data.dailyRevenue) + " R$";
+
+        // ==========================================
+        // DAILY REVENUE
+        // ==========================================
+
+        if (
+            data.dailyRevenue !== null &&
+            data.dailyRevenue !== undefined
+        ) {
+
+            document.getElementById("revenue").textContent =
+                formatNumber(data.dailyRevenue) + " R$";
+
+        } else {
+
+            document.getElementById("revenue").textContent =
+                "—";
+
+        }
+
+
+        // ==========================================
+        // LIKES
+        // ==========================================
 
         document.getElementById("likes").textContent =
             formatNumber(data.likes);
 
 
-        // =========================
-        // LIKE RATIO
-        // =========================
-
-        if (
-            typeof data.likes === "number" &&
-            typeof data.dislikes === "number" &&
-            data.likes + data.dislikes > 0
-        ) {
-
-            const ratio =
-                data.likes /
-                (data.likes + data.dislikes) *
-                100;
-
-            document.getElementById("likeRatio").textContent =
-                ratio.toFixed(1) + "%";
-
-        } else {
-            document.getElementById("likeRatio").textContent = "—";
-        }
-
-
-        // =========================
-        // OVERVIEW
-        // =========================
-
-        document.getElementById("gameName").textContent =
-            data.gameName || "—";
-
-        document.getElementById("maxPlayers").textContent =
-            formatNumber(data.maxPlayers);
+        // ==========================================
+        // DISLIKES
+        // ==========================================
 
         document.getElementById("dislikes").textContent =
             formatNumber(data.dislikes);
+
+
+        // ==========================================
+        // FAVORITES
+        // ==========================================
 
         document.getElementById("favorites").textContent =
             formatNumber(data.favorites);
 
 
-        if (data.updated) {
+        // ==========================================
+        // MAX PLAYERS
+        // ==========================================
 
-            const date = new Date(data.updated);
+        document.getElementById("maxPlayers").textContent =
+            formatNumber(data.maxPlayers);
 
-            document.getElementById("updated").textContent =
-                date.toLocaleDateString("pl-PL");
+
+        // ==========================================
+        // LIKE RATIO
+        // ==========================================
+
+        const likes = Number(data.likes);
+        const dislikes = Number(data.dislikes);
+
+        if (
+            Number.isFinite(likes) &&
+            Number.isFinite(dislikes) &&
+            likes + dislikes > 0
+        ) {
+
+            const ratio =
+                (likes / (likes + dislikes)) * 100;
+
+            document.getElementById("likeRatio").textContent =
+                ratio.toFixed(1) + "%";
+
+        } else {
+
+            document.getElementById("likeRatio").textContent =
+                "—";
 
         }
 
 
-        // =========================
+        // ==========================================
         // RETENTION
-        // =========================
+        // ==========================================
 
-        if (typeof data.retention === "number") {
+        const retention = Number(data.retention);
+
+        if (Number.isFinite(retention)) {
+
+            let retentionValue = retention;
+
+            /*
+             * Jeśli Roblox zwróci np. 0.35,
+             * oznacza to 35%.
+             */
+
+            if (
+                retentionValue > 0 &&
+                retentionValue <= 1
+            ) {
+
+                retentionValue *= 100;
+
+            }
 
             document.getElementById("retention").textContent =
-                data.retention.toFixed(1) + "%";
+                retentionValue.toFixed(1) + "%";
 
         } else {
 
             document.getElementById("retention").textContent =
                 "—";
+
         }
 
 
-        // =========================
+        // ==========================================
+        // UPDATED
+        // ==========================================
+
+        if (data.updated) {
+
+            const date = new Date(data.updated);
+
+            if (!Number.isNaN(date.getTime())) {
+
+                document.getElementById("updated").textContent =
+                    date.toLocaleString("pl-PL");
+
+            }
+
+        } else {
+
+            document.getElementById("updated").textContent =
+                "—";
+
+        }
+
+
+        // ==========================================
         // STATUS
-        // =========================
+        // ==========================================
 
         status.textContent =
             "✓ Dane zaktualizowane";
@@ -290,12 +379,18 @@ async function loadStats() {
             "Ostatnia aktualizacja: " +
             new Date().toLocaleTimeString("pl-PL");
 
+
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Błąd pobierania statystyk:",
+            error
+        );
+
 
         status.textContent =
-            "✕ Nie udało się pobrać danych";
+            "✕ Nie udało się pobrać danych: " +
+            error.message;
 
         status.className =
             "status error";
@@ -303,35 +398,71 @@ async function loadStats() {
     } finally {
 
         refreshButton.disabled = false;
+
     }
+
 }
 
 
-function formatNumber(number) {
+// ==========================================
+// FORMATOWANIE LICZB
+// ==========================================
+
+function formatNumber(value) {
 
     if (
-        number === null ||
-        number === undefined ||
-        Number.isNaN(Number(number))
+        value === null ||
+        value === undefined ||
+        value === ""
     ) {
+
         return "—";
+
     }
 
-    return Number(number).toLocaleString("pl-PL");
+
+    const number = Number(value);
+
+
+    if (!Number.isFinite(number)) {
+
+        return "—";
+
+    }
+
+
+    return number.toLocaleString("pl-PL");
+
 }
 
+
+// ==========================================
+// REFRESH BUTTON
+// ==========================================
 
 document
     .getElementById("refreshButton")
-    .addEventListener("click", loadStats);
+    .addEventListener(
+        "click",
+        loadStats
+    );
 
 
-// Pierwsze pobranie
+// ==========================================
+// START
+// ==========================================
+
 loadStats();
 
 
-// Automatyczne odświeżanie co 60 sekund
-setInterval(loadStats, 60000);
+// ==========================================
+// AUTO REFRESH
+// ==========================================
+
+setInterval(
+    loadStats,
+    60000
+);
 
 </script>
 
