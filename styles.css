@@ -1,0 +1,155 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: Arial, sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #242438 0%,
+            #0b0b10 55%,
+            #060609 100%
+        );
+
+    color: #ffffff;
+}
+
+.container {
+    width: 100%;
+    max-width: 430px;
+    padding: 20px;
+}
+
+.card {
+    padding: 38px 30px;
+
+    text-align: center;
+
+    background: rgba(20, 20, 30, 0.92);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 22px;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.5);
+
+    backdrop-filter: blur(15px);
+}
+
+.icon,
+.success-icon {
+    width: 65px;
+    height: 65px;
+
+    margin: 0 auto 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background: #5865f2;
+
+    font-size: 28px;
+}
+
+.success-icon {
+    background: #35c878;
+    font-size: 32px;
+}
+
+h1 {
+    margin: 0 0 10px;
+    font-size: 28px;
+}
+
+.subtitle {
+    margin: 0 0 25px;
+    color: #9b9ba8;
+}
+
+input {
+    width: 100%;
+
+    padding: 15px;
+
+    border: 1px solid #333340;
+    border-radius: 12px;
+
+    background: #0e0e14;
+    color: white;
+
+    font-size: 17px;
+    text-align: center;
+
+    outline: none;
+
+    transition: 0.2s;
+}
+
+input:focus {
+    border-color: #5865f2;
+    box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.15);
+}
+
+button {
+    width: 100%;
+
+    margin-top: 12px;
+    padding: 15px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #5865f2;
+    color: white;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #4752c4;
+    transform: translateY(-1px);
+}
+
+.secondary {
+    background: #252530;
+}
+
+.secondary:hover {
+    background: #30303d;
+}
+
+.error {
+    min-height: 20px;
+    margin: 15px 0 0;
+
+    color: #ff6b6b;
+    font-size: 14px;
+}
+
+.random-text {
+    margin: 20px 0 25px;
+
+    color: #b8b8c5;
+    line-height: 1.6;
+}
+
+.hidden {
+    display: none;
+}
