@@ -3,115 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel dostępu</title>
+
+    <title>Roblox Analytics</title>
+
     <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
 
-    <main class="container">
+<div class="app">
 
-        <section class="card" id="loginCard">
-            <div class="icon">🔒</div>
+    <header class="header">
+        <div>
+            <div class="eyebrow">FIRETRUCK STUDIOS</div>
+            <h1>Game Analytics</h1>
+            <p>Statystyki Twojego doświadczenia Roblox</p>
+        </div>
 
-            <h1>Panel dostępu</h1>
-            <p class="subtitle">Wprowadź kod, aby kontynuować</p>
+        <button id="refreshButton" class="refresh">
+            ↻ Odśwież
+        </button>
+    </header>
 
-            <form id="loginForm">
-                <input
-                    id="code"
-                    type="password"
-                    inputmode="numeric"
-                    maxlength="6"
-                    placeholder="Kod dostępu"
-                    autocomplete="off"
-                    required
-                >
 
-                <button type="submit">
-                    Odblokuj
-                </button>
-            </form>
+    <div id="status" class="status">
+        Ładowanie danych...
+    </div>
 
-            <p id="error" class="error"></p>
-        </section>
 
-        <section class="card hidden" id="contentCard">
-            <div class="success-icon">✓</div>
+    <section class="cards">
 
-            <h1>Odblokowano</h1>
+        <div class="card">
+            <div class="card-icon">👥</div>
+            <div class="label">CCU</div>
+            <div id="ccu" class="value">—</div>
+            <div class="description">Gracze online</div>
+        </div>
 
-            <p id="randomText" class="random-text"></p>
 
-            <button id="logoutButton" class="secondary">
-                Wyloguj
-            </button>
-        </section>
+        <div class="card">
+            <div class="card-icon">📅</div>
+            <div class="label">DAU</div>
+            <div id="dau" class="value">—</div>
+            <div class="description">Aktywni użytkownicy</div>
+        </div>
 
-    </main>
 
-    <script>
-        const form = document.getElementById("loginForm");
-        const codeInput = document.getElementById("code");
-        const error = document.getElementById("error");
+        <div class="card">
+            <div class="card-icon">👀</div>
+            <div class="label">VISITS</div>
+            <div id="visits" class="value">—</div>
+            <div class="description">Łączne wizyty</div>
+        </div>
 
-        const loginCard = document.getElementById("loginCard");
-        const contentCard = document.getElementById("contentCard");
-        const randomText = document.getElementById("randomText");
-        const logoutButton = document.getElementById("logoutButton");
 
-        const texts = [
-            "Witaj. Dostęp został przyznany.",
-            "System działa poprawnie.",
-            "Miłego korzystania ze strony.",
-            "Dostęp został pomyślnie zweryfikowany.",
-            "Ten tekst został wybrany losowo."
-        ];
+        <div class="card">
+            <div class="card-icon">💰</div>
+            <div class="label">DAILY REVENUE</div>
+            <div id="revenue" class="value">—</div>
+            <div class="description">Dzisiejszy przychód</div>
+        </div>
 
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
 
-            error.textContent = "";
+        <div class="card">
+            <div class="card-icon">❤️</div>
+            <div class="label">LIKES</div>
+            <div id="likes" class="value">—</div>
+            <div class="description">Polubienia</div>
+        </div>
 
-            try {
-                const response = await fetch("/api/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        code: codeInput.value
-                    })
-                });
 
-                const data = await response.json();
+        <div class="card">
+            <div class="card-icon">📊</div>
+            <div class="label">LIKE RATIO</div>
+            <div id="likeRatio" class="value">—</div>
+            <div class="description">Stosunek polubień</div>
+        </div>
 
-                if (data.success) {
-                    loginCard.classList.add("hidden");
-                    contentCard.classList.remove("hidden");
+    </section>
 
-                    randomText.textContent =
-                        texts[Math.floor(Math.random() * texts.length)];
 
-                    codeInput.value = "";
-                } else {
-                    error.textContent =
-                        data.message || "Nieprawidłowy kod.";
-                }
+    <section class="wide-grid">
 
-            } catch {
-                error.textContent =
-                    "Nie udało się połączyć z serwerem.";
-            }
+        <div class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Game Overview</h2>
+                    <span>Informacje o doświadczeniu</span>
+                </div>
+            </div>
+
+            <div class="overview">
+
+                <div>
+                    <span>Nazwa gry</span>
+                    <strong id="gameName">—</strong>
+                </div>
+
+                <div>
+                    <span>Max Players</span>
+                    <strong id="maxPlayers">—</strong>
+                </div>
+
+                <div>
+                    <span>Dislikes</span>
+                    <strong id="dislikes">—</strong>
+                </div>
+
+                <div>
+                    <span>Ulubione</span>
+                    <strong id="favorites">—</strong>
+                </div>
+
+                <div>
+                    <span>Ostatnia aktualizacja</span>
+                    <strong id="updated">—</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Retention</h2>
+                    <span>Powracający użytkownicy</span>
+                </div>
+            </div>
+
+            <div class="retention">
+
+                <div class="retention-number" id="retention">
+                    —
+                </div>
+
+                <div>
+                    <strong>D1 Retention</strong>
+                    <p>
+                        Odsetek użytkowników, którzy wrócili
+                        następnego dnia.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+        <span>Roblox Analytics Dashboard</span>
+        <span id="lastUpdate">—</span>
+    </footer>
+
+</div>
+
+
+<script>
+
+async function loadStats() {
+
+    const status = document.getElementById("status");
+    const refreshButton = document.getElementById("refreshButton");
+
+    status.textContent = "Pobieranie danych...";
+    status.className = "status loading";
+
+    refreshButton.disabled = true;
+
+    try {
+
+        const response = await fetch("/api/stats", {
+            cache: "no-store"
         });
 
-        logoutButton.addEventListener("click", () => {
-            contentCard.classList.add("hidden");
-            loginCard.classList.remove("hidden");
-            codeInput.value = "";
-            error.textContent = "";
-        });
-    </script>
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Błąd API");
+        }
+
+
+        // =========================
+        // PODSTAWOWE STATYSTYKI
+        // =========================
+
+        document.getElementById("ccu").textContent =
+            formatNumber(data.ccu);
+
+        document.getElementById("dau").textContent =
+            formatNumber(data.dau);
+
+        document.getElementById("visits").textContent =
+            formatNumber(data.visits);
+
+        document.getElementById("revenue").textContent =
+            formatNumber(data.dailyRevenue) + " R$";
+
+        document.getElementById("likes").textContent =
+            formatNumber(data.likes);
+
+
+        // =========================
+        // LIKE RATIO
+        // =========================
+
+        if (
+            typeof data.likes === "number" &&
+            typeof data.dislikes === "number" &&
+            data.likes + data.dislikes > 0
+        ) {
+
+            const ratio =
+                data.likes /
+                (data.likes + data.dislikes) *
+                100;
+
+            document.getElementById("likeRatio").textContent =
+                ratio.toFixed(1) + "%";
+
+        } else {
+            document.getElementById("likeRatio").textContent = "—";
+        }
+
+
+        // =========================
+        // OVERVIEW
+        // =========================
+
+        document.getElementById("gameName").textContent =
+            data.gameName || "—";
+
+        document.getElementById("maxPlayers").textContent =
+            formatNumber(data.maxPlayers);
+
+        document.getElementById("dislikes").textContent =
+            formatNumber(data.dislikes);
+
+        document.getElementById("favorites").textContent =
+            formatNumber(data.favorites);
+
+
+        if (data.updated) {
+
+            const date = new Date(data.updated);
+
+            document.getElementById("updated").textContent =
+                date.toLocaleDateString("pl-PL");
+
+        }
+
+
+        // =========================
+        // RETENTION
+        // =========================
+
+        if (typeof data.retention === "number") {
+
+            document.getElementById("retention").textContent =
+                data.retention.toFixed(1) + "%";
+
+        } else {
+
+            document.getElementById("retention").textContent =
+                "—";
+        }
+
+
+        // =========================
+        // STATUS
+        // =========================
+
+        status.textContent =
+            "✓ Dane zaktualizowane";
+
+        status.className =
+            "status success";
+
+
+        document.getElementById("lastUpdate").textContent =
+            "Ostatnia aktualizacja: " +
+            new Date().toLocaleTimeString("pl-PL");
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "✕ Nie udało się pobrać danych";
+
+        status.className =
+            "status error";
+
+    } finally {
+
+        refreshButton.disabled = false;
+    }
+}
+
+
+function formatNumber(number) {
+
+    if (
+        number === null ||
+        number === undefined ||
+        Number.isNaN(Number(number))
+    ) {
+        return "—";
+    }
+
+    return Number(number).toLocaleString("pl-PL");
+}
+
+
+document
+    .getElementById("refreshButton")
+    .addEventListener("click", loadStats);
+
+
+// Pierwsze pobranie
+loadStats();
+
+
+// Automatyczne odświeżanie co 60 sekund
+setInterval(loadStats, 60000);
+
+</script>
 
 </body>
 </html>
