@@ -1,10 +1,17 @@
 const UNIVERSE_ID = "10529904359";
 
-async function fetchDailyMetric(universeId, apiKey, metric) {
+function sanitizeKey(raw) {
+    if (!raw) return "";
+    return raw
+        .normalize("NFKC")
+        .replace(/[\s\u200B\u200C\u200D\u200E\u200F\uFEFF]/g, "");
+}
+
+async function fetchLatestMetric(universeId, apiKey, metric) {
     const now = new Date();
     const endTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const startTime = new Date(endTime);
-    startTime.setUTCDate(startTime.getUTCDate() - 1); // ostatni pełny dzień (UTC)
+    startTime.setUTCDate(startTime.getUTCDate() - 8); // patrzymy 8 dni wstecz
 
     const res = await fetch(
         `https://apis.roblox.com/analytics-query-api/v1/universes/${universeId}/metrics`,
@@ -26,25 +33,29 @@ async function fetchDailyMetric(universeId, apiKey, metric) {
     if (!res.ok) {
         const text = await res.text();
         console.error(`Analytics API (${metric}) error ${res.status}:`, text);
-        return { value: null, error: `${res.status}: ${text}` };
+        return { value: null, error: `${res.status}: ${text}`, pointsCount: 0 };
     }
 
     const json = await res.json();
-    const points = json?.response?.values?.[0]?.dataPoints;
-    if (points && points.length > 0) {
-        return { value: points[points.length - 1].value, error: null };
+    const points = json?.response?.values?.[0]?.dataPoints || [];
+    if (points.length > 0) {
+        // bierzemy najnowszy dostępny dzień z danymi
+        const latest = points[points.length - 1];
+        return { value: latest.value, error: null, pointsCount: points.length, latestDate: latest.time };
     }
-    return { value: null, error: null };
+    return { value: null, error: null, pointsCount: 0 };
 }
 
 export async function onRequestGet(context) {
-    const apiKey = (context.env.ROBLOX_API_KEY || "").replace(/\s+/g, "");
+    const apiKey = sanitizeKey(context.env.ROBLOX_API_KEY || "");
+
     if (!apiKey) {
         return Response.json(
             { success: false, error: "ROBLOX_API_KEY nie jest dostępny w Cloudflare." },
             { status: 500 }
         );
     }
+
     try {
         const response = await fetch(
             `https://games.roblox.com/v1/games?universeIds=${UNIVERSE_ID}`,
@@ -74,47 +85,12 @@ export async function onRequestGet(context) {
             );
         }
 
-        // === Analytics Query API: Daily Revenue + DAU ===
         let dailyRevenue = null;
         let dau = null;
         let analyticsError = null;
+        let analyticsDebug = null;
 
         try {
             const [revenueResult, dauResult] = await Promise.all([
-                fetchDailyMetric(UNIVERSE_ID, apiKey, "DailyRevenue"),
-                fetchDailyMetric(UNIVERSE_ID, apiKey, "DailyActiveUsers")
-            ]);
-            dailyRevenue = revenueResult.value;
-            dau = dauResult.value;
-            analyticsError = revenueResult.error || dauResult.error || null;
-        } catch (analyticsErr) {
-            console.error("Analytics fetch failed:", analyticsErr);
-            analyticsError = analyticsErr.message;
-        }
-
-        return Response.json(
-            {
-                success: true,
-                universeId: UNIVERSE_ID,
-                gameName: game.name ?? null,
-                ccu: game.playing ?? 0,
-                dau,
-                visits: game.visits ?? 0,
-                maxPlayers: game.maxPlayers ?? 0,
-                favorites: game.favoritedCount ?? 0,
-                likes: game.upVotes ?? 0,
-                dislikes: game.downVotes ?? 0,
-                updated: game.updated ?? null,
-                dailyRevenue,
-                analyticsError
-            },
-            { headers: { "Cache-Control": "no-store" } }
-        );
-    } catch (error) {
-        console.error("Roblox API error:", error);
-        return Response.json(
-            { success: false, error: error.message || "Nieznany błąd." },
-            { status: 500 }
-        );
-    }
-}
+                fetchLatestMetric(UNIVERSE_ID, apiKey, "DailyRevenue"),
+                fetchLatestMetric(UNIVERS
