@@ -38,7 +38,7 @@ async function fetchDailyMetric(universeId, apiKey, metric) {
 }
 
 export async function onRequestGet(context) {
-    const apiKey = context.env.ROBLOX_API_KEY;
+    const apiKey = (context.env.ROBLOX_API_KEY || "").trim();
     if (!apiKey) {
         return Response.json(
             { success: false, error: "ROBLOX_API_KEY nie jest dostępny w Cloudflare." },
@@ -106,7 +106,7 @@ export async function onRequestGet(context) {
                 dislikes: game.downVotes ?? 0,
                 updated: game.updated ?? null,
                 dailyRevenue,
-                analyticsError // tymczasowo do debugowania — usuń później
+                analyticsError
             },
             { headers: { "Cache-Control": "no-store" } }
         );
