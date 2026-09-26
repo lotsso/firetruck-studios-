@@ -38,7 +38,7 @@ async function fetchDailyMetric(universeId, apiKey, metric) {
 }
 
 export async function onRequestGet(context) {
-    const apiKey = (context.env.ROBLOX_API_KEY || "").trim();
+    const apiKey = (context.env.ROBLOX_API_KEY || "").replace(/\s+/g, "");
     if (!apiKey) {
         return Response.json(
             { success: false, error: "ROBLOX_API_KEY nie jest dostępny w Cloudflare." },
