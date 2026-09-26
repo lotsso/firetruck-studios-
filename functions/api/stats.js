@@ -1,5 +1,42 @@
 const UNIVERSE_ID = "10529904359";
 
+async function fetchDailyMetric(universeId, apiKey, metric) {
+    const now = new Date();
+    const endTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const startTime = new Date(endTime);
+    startTime.setUTCDate(startTime.getUTCDate() - 1); // ostatni pełny dzień (UTC)
+
+    const res = await fetch(
+        `https://apis.roblox.com/analytics-query-api/v1/universes/${universeId}/metrics`,
+        {
+            method: "POST",
+            headers: {
+                "x-api-key": apiKey,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                metric,
+                granularity: "OneDay",
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString()
+            })
+        }
+    );
+
+    if (!res.ok) {
+        const text = await res.text();
+        console.error(`Analytics API (${metric}) error ${res.status}:`, text);
+        return { value: null, error: `${res.status}: ${text}` };
+    }
+
+    const json = await res.json();
+    const points = json?.response?.values?.[0]?.dataPoints;
+    if (points && points.length > 0) {
+        return { value: points[points.length - 1].value, error: null };
+    }
+    return { value: null, error: null };
+}
+
 export async function onRequestGet(context) {
     const apiKey = context.env.ROBLOX_API_KEY;
     if (!apiKey) {
@@ -37,42 +74,22 @@ export async function onRequestGet(context) {
             );
         }
 
-        // === NOWE: pobranie Daily Revenue z Analytics Query API ===
+        // === Analytics Query API: Daily Revenue + DAU ===
         let dailyRevenue = null;
+        let dau = null;
+        let analyticsError = null;
+
         try {
-            const now = new Date();
-            const endTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-            const startTime = new Date(endTime);
-            startTime.setUTCDate(startTime.getUTCDate() - 1); // ostatni pełny dzień
-
-            const revenueResponse = await fetch(
-                `https://apis.roblox.com/analytics-query-api/v1/universes/${UNIVERSE_ID}/metrics`,
-                {
-                    method: "POST",
-                    headers: {
-                        "x-api-key": apiKey,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        metric: "DailyRevenue",
-                        granularity: "OneDay",
-                        startTime: startTime.toISOString(),
-                        endTime: endTime.toISOString()
-                    })
-                }
-            );
-
-            if (revenueResponse.ok) {
-                const revenueData = await revenueResponse.json();
-                const points = revenueData?.response?.values?.[0]?.dataPoints;
-                if (points && points.length > 0) {
-                    dailyRevenue = points[points.length - 1].value;
-                }
-            } else {
-                console.error("Revenue API error:", await revenueResponse.text());
-            }
-        } catch (revenueError) {
-            console.error("Revenue fetch failed:", revenueError);
+            const [revenueResult, dauResult] = await Promise.all([
+                fetchDailyMetric(UNIVERSE_ID, apiKey, "DailyRevenue"),
+                fetchDailyMetric(UNIVERSE_ID, apiKey, "DailyActiveUsers")
+            ]);
+            dailyRevenue = revenueResult.value;
+            dau = dauResult.value;
+            analyticsError = revenueResult.error || dauResult.error || null;
+        } catch (analyticsErr) {
+            console.error("Analytics fetch failed:", analyticsErr);
+            analyticsError = analyticsErr.message;
         }
 
         return Response.json(
@@ -81,13 +98,15 @@ export async function onRequestGet(context) {
                 universeId: UNIVERSE_ID,
                 gameName: game.name ?? null,
                 ccu: game.playing ?? 0,
+                dau,
                 visits: game.visits ?? 0,
                 maxPlayers: game.maxPlayers ?? 0,
                 favorites: game.favoritedCount ?? 0,
                 likes: game.upVotes ?? 0,
                 dislikes: game.downVotes ?? 0,
                 updated: game.updated ?? null,
-                dailyRevenue
+                dailyRevenue,
+                analyticsError // tymczasowo do debugowania — usuń później
             },
             { headers: { "Cache-Control": "no-store" } }
         );
