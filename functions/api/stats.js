@@ -9,9 +9,9 @@ function sanitizeKey(raw) {
 
 async function fetchLatestMetric(universeId, apiKey, metric) {
     const now = new Date();
-    const endTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const endTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
     const startTime = new Date(endTime);
-    startTime.setUTCDate(startTime.getUTCDate() - 8); // patrzymy 8 dni wstecz
+    startTime.setUTCDate(startTime.getUTCDate() - 9);
 
     const res = await fetch(
         `https://apis.roblox.com/analytics-query-api/v1/universes/${universeId}/metrics`,
@@ -39,7 +39,6 @@ async function fetchLatestMetric(universeId, apiKey, metric) {
     const json = await res.json();
     const points = json?.response?.values?.[0]?.dataPoints || [];
     if (points.length > 0) {
-        // bierzemy najnowszy dostępny dzień z danymi
         const latest = points[points.length - 1];
         return { value: latest.value, error: null, pointsCount: points.length, latestDate: latest.time };
     }
@@ -93,4 +92,46 @@ export async function onRequestGet(context) {
         try {
             const [revenueResult, dauResult] = await Promise.all([
                 fetchLatestMetric(UNIVERSE_ID, apiKey, "DailyRevenue"),
-                fetchLatestMetric(UNIVERS
+                fetchLatestMetric(UNIVERSE_ID, apiKey, "DailyActiveUsers")
+            ]);
+            dailyRevenue = revenueResult.value;
+            dau = dauResult.value;
+            analyticsError = revenueResult.error || dauResult.error || null;
+            analyticsDebug = {
+                revenuePoints: revenueResult.pointsCount,
+                revenueLatestDate: revenueResult.latestDate || null,
+                dauPoints: dauResult.pointsCount,
+                dauLatestDate: dauResult.latestDate || null
+            };
+        } catch (analyticsErr) {
+            console.error("Analytics fetch failed:", analyticsErr);
+            analyticsError = analyticsErr.message;
+        }
+
+        return Response.json(
+            {
+                success: true,
+                universeId: UNIVERSE_ID,
+                gameName: game.name ?? null,
+                ccu: game.playing ?? 0,
+                dau: dau ?? 0,
+                visits: game.visits ?? 0,
+                maxPlayers: game.maxPlayers ?? 0,
+                favorites: game.favoritedCount ?? 0,
+                likes: game.upVotes ?? 0,
+                dislikes: game.downVotes ?? 0,
+                updated: game.updated ?? null,
+                dailyRevenue: dailyRevenue ?? 0,
+                analyticsError,
+                analyticsDebug
+            },
+            { headers: { "Cache-Control": "no-store" } }
+        );
+    } catch (error) {
+        console.error("Roblox API error:", error);
+        return Response.json(
+            { success: false, error: error.message || "Nieznany błąd." },
+            { status: 500 }
+        );
+    }
+}
