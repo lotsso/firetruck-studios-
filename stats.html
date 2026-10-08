@@ -149,12 +149,14 @@ function renderKpis(){
     document.getElementById('mTitle').textContent=''; document.getElementById('mChart').innerHTML='';
     return;
   }
+  // window ends at the latest day that has data (today's UTC bucket is often not ready yet)
+  const lastT=Math.max(0,...Object.values(an.data).flatMap(a=>a.map(p=>p[0]))), end=lastT? lastT+DAY : an.end;
   const rows=METRICS.map(([id,label,agg,f])=>{
     let pts=an.data[id]; if(!pts) return {id,label,f,na:true};
     if(f==='pct' && Math.max(...pts.map(p=>p[1]),0)<=1) pts=pts.map(p=>[p[0],p[1]*100]);   // fraction -> %
-    const [cur,prev]=split(pts,n,an.end), calc=a=>!a.length?null:agg==='sum'?a.reduce((s,p)=>s+p[1],0):a.reduce((s,p)=>s+p[1],0)/a.length;
+    const [cur,prev]=split(pts,n,end), calc=a=>!a.length?null:agg==='sum'?a.reduce((s,p)=>s+p[1],0):a.reduce((s,p)=>s+p[1],0)/a.length;
     const c=calc(cur), p=calc(prev);
-    return {id,label,f,agg,cur,prev,c,d:(c!=null&&p)?(c-p)/Math.abs(p)*100:null};
+    return {id,label,f,agg,cur,prev,pts,c,d:(c!=null&&p)?(c-p)/Math.abs(p)*100:null};
   });
   window._rows=rows;
   box.innerHTML=rows.map(r=>`<button class="kpi${r.na?' na':''}" data-id="${r.id}" aria-pressed="${r.id===selected}">
@@ -163,7 +165,8 @@ function renderKpis(){
     <div class="s">${r.d==null?'&nbsp;':`<span class="${r.d>=0?'up':'down'}">${r.d>=0?'▲':'▼'} ${Math.abs(r.d).toFixed(1)}%</span> vs previous`}</div></button>`).join('');
   box.querySelectorAll('.kpi').forEach(b=>b.onclick=()=>{selected=b.dataset.id;renderKpis();});
   const r=rows.find(x=>x.id===selected&&!x.na)||rows.find(x=>!x.na);
-  if(r){ document.getElementById('mTitle').textContent=r.label; drawChart(document.getElementById('mChart'),r.cur,r.prev,r.f,n||1); }
+  if(r){ document.getElementById('mTitle').textContent=r.label; const cn=n===1?7:n, cp=r.pts?split(r.pts,cn,end):[r.cur,r.prev];   // 1d: chart shows the last 7 days
+    drawChart(document.getElementById('mChart'),cp[0],cp[1],r.f,cn||1); }
   const errs=Object.keys(an.errors||{});
   note.textContent=errs.length?'No data for: '+errs.join(', ')+' (metric not available for this game or account).':'Daily data in UTC. Today may still be incomplete.';
 }
@@ -175,10 +178,11 @@ async function loadCreator(){
     note.textContent='To see DAU, playtime, revenue, conversion, ARPPU, play through rate and retention, deploy worker.js and set its address in workerUrl (shared.js).';
     return;
   }
-  const d=n||'all', base=CONFIG.workerUrl.replace(/\/$/,'');
+  if(an){ renderKpis(); return; }          // data is already loaded: switching periods just re-filters it
+  const base=CONFIG.workerUrl.replace(/\/$/,'');
   note.textContent='Loading…';
   try{
-    const [a,c]=await Promise.all([getJSON(`${base}/analytics?days=${d}`), getJSON(`${base}/ccu?days=${n||90}`).catch(()=>null)]);
+    const [a,c]=await Promise.all([getJSON(`${base}/analytics?days=all`), getJSON(`${base}/ccu?days=90`).catch(()=>null)]);
     an=a; ccuData=c; renderKpis(); renderCcu();
   }catch(e){ an=null; renderKpis(); note.textContent='Could not fetch data from the Worker: '+e.message; }
 }
