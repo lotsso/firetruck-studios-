@@ -7,9 +7,9 @@ const CONFIG = {
   apiDomain: 'roproxy.com',    // CORS proxy; put your own proxy here
   refreshMs: 30000,
 
-  // URL of your Cloudflare Worker (see worker.js). Leave '' = public data only.
-  // The Worker holds the Open Cloud key and returns DAU, revenue, retention, etc.
-  workerUrl: 'https://firetruck-studios.nieubogi.workers.dev'                // e.g. 'https://pinkpetal-stats.your-account.workers.dev'
+  // Creator analytics are served by /analytics on this same site (functions/analytics.js, Cloudflare Pages).
+  // Use '' to disable, or a full URL if you host the API elsewhere (see worker.js).
+  workerUrl: location.origin
 };
 
 const api = (sub, path) => `https://${sub}.${CONFIG.apiDomain}${path}`;
