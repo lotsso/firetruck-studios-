@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game statistics – Pink Petal Studio</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1d0a18;--card:#2b1226;--line:#4a2440;--text:#fff1f7;--mute:#c9a3ba;--petal:#ff6fa8;--deep:#d63c82;--ok:#4ade80;
+ --display:'Fraunces',Georgia,serif;--body:'Figtree',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);padding:24px 5vw 60px;line-height:1.5}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--petal);outline-offset:3px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.back{color:var(--mute);text-decoration:none;display:inline-flex;align-items:center;gap:10px}.blogo{width:34px;height:34px;border-radius:50%;background:#fff;object-fit:contain}.back:hover{color:var(--text)}
+.head{display:flex;gap:16px;align-items:center}
+.head img{width:64px;height:64px;border-radius:14px;background:var(--card)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(1.5rem,4vw,2.4rem);letter-spacing:-.02em;line-height:1.1}
+.sub{color:var(--mute);font-size:.9rem}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:22px 28px}
+.row+.row{border-top:1px solid var(--line);margin-top:22px;padding-top:22px}
+.k{color:var(--mute);font-size:.88rem}
+.v{font-family:var(--display);font-weight:900;font-size:1.9rem;line-height:1.2;font-variant-numeric:tabular-nums}
+.v.big{font-size:3.4rem}
+.s{color:var(--mute);font-size:.8rem}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-right:8px;animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+h2{font-family:var(--display);font-size:1.2rem;margin-bottom:14px}
+.layout{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.chart svg{width:100%;height:auto;display:block}
+.glance dl{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:.92rem}
+.glance dt{color:var(--mute)}
+.note{color:var(--mute);font-size:.85rem;margin-top:14px}
+.locked .v{color:#7d5a70}
+#err{color:#ff9fc2}
+.periods{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 18px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button,.prevbtn{font:inherit;font-weight:600;color:var(--mute);background:none;border:0;padding:8px 14px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--line);color:var(--text)}
+.prevbtn[aria-pressed=true]{color:var(--petal)}
+.legend{display:flex;gap:18px;color:var(--mute);font-size:.85rem;margin-bottom:8px}
+.legend i{display:inline-block;width:22px;height:0;border-top:3px solid var(--petal);vertical-align:middle;margin-right:6px}
+.legend i.d{border-top:2px dashed var(--mute)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.kpi{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi:hover{border-color:var(--deep)}.kpi[aria-pressed=true]{border-color:var(--petal);background:#3a1830}
+.kpi .v{font-size:1.5rem}
+.up{color:var(--ok)}.down{color:#ff7a7a}
+.kpi.na .v{color:#7d5a70}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="back" href="index.html#games"><img class="blogo" src="logo.png" alt=""> Pink Petal Studio</a>
+  <span class="sub" id="upd"></span>
+</div>
+<div class="head"><img id="icon" alt=""><div><h1 id="name">Loading…</h1><div class="sub" id="by"></div></div></div>
+<p id="err"></p>
+<br>
+
+<div class="panel" id="main"></div>
+
+<div class="periods">
+  <div class="seg" id="seg" role="group" aria-label="Period"></div>
+  <button class="prevbtn seg" id="prevBtn" aria-pressed="false">Previous period</button>
+</div>
+
+<div class="layout">
+  <div class="panel chart">
+    <h2>Players online (CCU)</h2>
+    <div class="legend"><span><i></i>This period</span><span class="pl" hidden><i class="d"></i>Previous period</span></div>
+    <div id="chart"></div>
+    <p class="note" id="chartNote"></p>
+  </div>
+  <div class="panel glance">
+    <h2>At a glance</h2>
+    <dl id="glance"></dl>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Creator analytics</h2>
+  <div class="kpis" id="kpis"></div>
+  <div class="legend"><b id="mTitle"></b></div>
+  <div id="mChart"></div>
+  <p class="note" id="creatorNote"></p>
+</div>
+
+<script src="shared.js"></script>
+<script>
+
+/* ---------- periods, charts, creator metrics ---------- */
+const PERIODS = {'1d':1,'7d':7,'14d':14,'28d':28,'56d':56,'90d':90,'All':0};
+const DAY = 864e5;
+let period='7d', showPrev=false, selected='DailyActiveUsers', localHist=[], ccuData=null, an=null;
+const METRICS=[
+ ['DailyActiveUsers','DAU','avg','int'],['MonthlyActiveUsers','MAU','avg','int'],
+ ['AveragePlayTimeMinutesPerDAU','Average playtime','avg','min'],['TotalPlayTimeHours','Total playtime','sum','hrs'],
+ ['AverageSessionLengthMinutes','Avg session time','avg','min'],['Visits','Sessions','sum','int'],
+ ['DailyRevenue','Daily revenue','sum','rbx'],['PayingUsers','Paying users','avg','int'],
+ ['PayingUsersCVR','Player conversion rate','avg','pct'],['AverageRevenuePerPayingUser','Avg revenue per paying user','avg','rbx'],
+ ['AverageRevenuePerUser','Avg revenue per DAU','avg','dec'],['RFYPlayThroughRate','Play through rate','avg','pct'],
+ ['ForwardD1Retention','Day 1 retention','avg','pct'],['ForwardD7Retention','Day 7 retention','avg','pct'],
+ ['ForwardD30Retention','Day 30 retention','avg','pct'],['DauMauStickiness','Stickiness (DAU/MAU)','avg','pct']];
+const fv=(f,v)=> v==null||isNaN(v)?'–': f==='int'?nf.format(Math.round(v)): f==='dec'?v.toFixed(2): f==='min'?v.toFixed(1)+' min':
+  f==='hrs'?nf.format(Math.round(v))+' h': f==='rbx'?nf.format(Math.round(v))+' R$': v.toFixed(1)+'%';
+
+function split(points, n, end){            // n=0 => whole range
+  if(!n) return [points, []];
+  return [points.filter(p=>p[0]>=end-n*DAY), points.filter(p=>p[0]<end-n*DAY && p[0]>=end-2*n*DAY)];
+}
+function drawChart(el, cur, prev, f, n){
+  if(cur.length<2){ el.innerHTML='<p class="sub">Not enough data to draw a chart for this period.</p>'; return; }
+  const W=900,H=260,L=48,B=26,T=14,R=14, t0=cur[0][0], t1=cur[cur.length-1][0];
+  const pv=showPrev?prev.map(p=>[p[0]+n*DAY,p[1]]):[];
+  const max=Math.max(1e-9,...cur.map(p=>p[1]),...pv.map(p=>p[1]))*1.15;
+  const x=t=>L+(t-t0)/(t1-t0||1)*(W-L-R), y=v=>T+(1-v/max)*(H-T-B);
+  const line=a=>a.map(p=>`${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join(' ');
+  const grid=[0,.25,.5,.75,1].map(k=>{const v=max*k;return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#4a2440" stroke-dasharray="2 4"/><text x="${L-6}" y="${y(v)+4}" fill="#c9a3ba" font-size="11" text-anchor="end">${f==='pct'?v.toFixed(0)+'%':fv('int',v).replace(/\s?(R\$|h|min)$/,'')}</text>`}).join('');
+  const lab=t=> (t1-t0<=2*DAY) ? new Date(t).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : new Date(t).toLocaleDateString('en-US',{day:'numeric',month:'short'});
+  const mx=cur.reduce((a,p)=>p[1]>a[1]?p:a), last=cur[cur.length-1];
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Chart">${grid}
+   ${pv.length>1?`<polyline points="${line(pv)}" fill="none" stroke="#c9a3ba" stroke-width="2" stroke-dasharray="5 4"/>`:''}
+   <polygon points="${x(t0)},${H-B} ${line(cur)} ${x(t1)},${H-B}" fill="rgba(255,111,168,.15)"/>
+   <polyline points="${line(cur)}" fill="none" stroke="#ff6fa8" stroke-width="2.5" stroke-linejoin="round"/>
+   <circle cx="${x(mx[0])}" cy="${y(mx[1])}" r="4" fill="#ff6fa8"/><text x="${Math.min(x(mx[0]),W-70)}" y="${y(mx[1])-9}" fill="#fff1f7" font-size="11">Peak ${fv(f,mx[1])}</text>
+   <circle cx="${x(last[0])}" cy="${y(last[1])}" r="4.5" fill="#ff6fa8"/>
+   <text x="${L}" y="${H-6}" fill="#c9a3ba" font-size="11">${lab(t0)}</text><text x="${W-R}" y="${H-6}" fill="#c9a3ba" font-size="11" text-anchor="end">${lab(t1)}</text></svg>`;
+}
+
+function renderCcu(){
+  const n=PERIODS[period], el=document.getElementById('chart'), note=document.getElementById('chartNote');
+  let pts, end;
+  if(ccuData){ pts=ccuData.points; end=ccuData.now; note.textContent='Samples every 15 minutes, stored by your Worker.'; }
+  else { pts=localHist; end=Date.now(); note.textContent='Without the Worker, history is built only from samples collected in this browser while the page is open (7 days max).'; }
+  const [cur,prev]=split(pts,n||90,end);
+  drawChart(el,cur,prev,'int',n||90);
+}
+
+function renderKpis(){
+  const n=PERIODS[period], box=document.getElementById('kpis'), note=document.getElementById('creatorNote');
+  if(!an){
+    box.innerHTML=METRICS.map(m=>`<div class="kpi na"><div class="k">${m[1]}</div><div class="v">–</div></div>`).join('');
+    document.getElementById('mTitle').textContent=''; document.getElementById('mChart').innerHTML='';
+    return;
+  }
+  const rows=METRICS.map(([id,label,agg,f])=>{
+    let pts=an.data[id]; if(!pts) return {id,label,f,na:true};
+    if(f==='pct' && Math.max(...pts.map(p=>p[1]),0)<=1) pts=pts.map(p=>[p[0],p[1]*100]);   // fraction -> %
+    const [cur,prev]=split(pts,n,an.end), calc=a=>!a.length?null:agg==='sum'?a.reduce((s,p)=>s+p[1],0):a.reduce((s,p)=>s+p[1],0)/a.length;
+    const c=calc(cur), p=calc(prev);
+    return {id,label,f,agg,cur,prev,c,d:(c!=null&&p)?(c-p)/Math.abs(p)*100:null};
+  });
+  window._rows=rows;
+  box.innerHTML=rows.map(r=>`<button class="kpi${r.na?' na':''}" data-id="${r.id}" aria-pressed="${r.id===selected}">
+    <div class="k">${r.label}${r.agg?` <span class="s">· ${r.agg==='sum'?'sum':'avg'}</span>`:''}</div>
+    <div class="v">${r.na?'–':fv(r.f,r.c)}</div>
+    <div class="s">${r.d==null?'&nbsp;':`<span class="${r.d>=0?'up':'down'}">${r.d>=0?'▲':'▼'} ${Math.abs(r.d).toFixed(1)}%</span> vs previous`}</div></button>`).join('');
+  box.querySelectorAll('.kpi').forEach(b=>b.onclick=()=>{selected=b.dataset.id;renderKpis();});
+  const r=rows.find(x=>x.id===selected&&!x.na)||rows.find(x=>!x.na);
+  if(r){ document.getElementById('mTitle').textContent=r.label; drawChart(document.getElementById('mChart'),r.cur,r.prev,r.f,n||1); }
+  const errs=Object.keys(an.errors||{});
+  note.textContent=errs.length?'No data for: '+errs.join(', ')+' (metric not available for this game or account).':'Daily data in UTC. Today may still be incomplete.';
+}
+
+async function loadCreator(){
+  const n=PERIODS[period], note=document.getElementById('creatorNote');
+  if(!CONFIG.workerUrl){
+    an=null; renderKpis();
+    note.textContent='To see DAU, playtime, revenue, conversion, ARPPU, play through rate and retention, deploy worker.js and set its address in workerUrl (shared.js).';
+    return;
+  }
+  const d=n||'all', base=CONFIG.workerUrl.replace(/\/$/,'');
+  note.textContent='Loading…';
+  try{
+    const [a,c]=await Promise.all([getJSON(`${base}/analytics?days=${d}`), getJSON(`${base}/ccu?days=${n||90}`).catch(()=>null)]);
+    an=a; ccuData=c; renderKpis(); renderCcu();
+  }catch(e){ an=null; renderKpis(); note.textContent='Could not fetch data from the Worker: '+e.message; }
+}
+
+const seg=document.getElementById('seg');
+seg.innerHTML=Object.keys(PERIODS).map(p=>`<button aria-pressed="${p===period}" data-p="${p}">${p}</button>`).join('');
+seg.onclick=e=>{ const p=e.target.dataset.p; if(!p) return; period=p;
+  seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===p)); loadCreator(); renderCcu(); };
+const pb=document.getElementById('prevBtn');
+pb.onclick=()=>{ showPrev=!showPrev; pb.setAttribute('aria-pressed',showPrev); document.querySelector('.pl').hidden=!showPrev; renderCcu(); renderKpis(); };
+
+const gid = new URLSearchParams(location.search).get('id') || CONFIG.games[0];
+let ctx = null;
+const tile = (k,v,s='',cls='') => `<div class="${cls}"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>${s?`<div class="s">${esc(s)}</div>`:''}</div>`;
+const date = d => d ? new Date(d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}) : '–';
+const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+
+/* CCU history stored in the browser (the Roblox API provides no history) */
+const histKey = u => 'ppc_ccu_'+u;
+function pushSample(u, v){
+  let h=[]; try{ h = JSON.parse(localStorage.getItem(histKey(u))||'[]'); }catch(e){}
+  h.push([Date.now(), v]); h = h.filter(p=>Date.now()-p[0] < 7*864e5).slice(-2000);
+  try{ localStorage.setItem(histKey(u), JSON.stringify(h)); }catch(e){}
+  return h;
+}
+async function load(){
+  try{
+    ctx = ctx || await toUniverse(gid);
+    const u = ctx.universeId;
+    const [info,votes,icons] = await Promise.all([
+      getJSON(api('games',`/v1/games?universeIds=${u}`)),
+      getJSON(api('games',`/v1/games/votes?universeIds=${u}`)).catch(()=>({data:[]})),
+      getJSON(api('thumbnails',`/v1/games/icons?universeIds=${u}&returnPolicy=PlaceHolder&size=128x128&format=Png&isCircular=false`)).catch(()=>({data:[]}))
+    ]);
+    const g = info.data[0]; if(!g) throw new Error('No game found for ID '+gid);
+    const vt = votes.data[0] || {upVotes:0,downVotes:0};
+    let servers=[]; try{ servers=(await getJSON(api('games',`/v1/games/${g.rootPlaceId}/servers/Public?sortOrder=Desc&limit=100`))).data||[]; }catch(e){}
+
+    const h = pushSample(u, g.playing);
+    const vals = h.map(p=>p[1]), day = h.filter(p=>Date.now()-p[0]<864e5).map(p=>p[1]), wk = vals;
+    const total = vt.upVotes+vt.downVotes, rating = total? (vt.upVotes/total*100).toFixed(1)+'%' : '–';
+    const pings = servers.map(s=>s.ping).filter(Number.isFinite), fpss = servers.map(s=>s.fps).filter(Number.isFinite);
+
+    document.title = g.name+' – statistics';
+    document.getElementById('name').textContent = g.name;
+    document.getElementById('by').textContent = 'By: '+(g.creator?.name||'–');
+    const ic=icons.data[0]?.imageUrl; if(ic) document.getElementById('icon').src=ic;
+    document.getElementById('upd').textContent = 'Updated '+new Date().toLocaleTimeString('en-US');
+    document.getElementById('err').textContent = '';
+
+    document.getElementById('main').innerHTML =
+      `<div class="row">
+        <div><div class="k"><i class="dot"></i>Playing now (CCU)</div><div class="v big">${nf.format(g.playing)}</div></div>
+        ${tile('Average (24h samples)', nf.format(Math.round(avg(day))), 'from '+day.length+' samples')}
+        ${tile('Peak (recorded)', nf.format(Math.max(0,...wk)), 'in this browser')}
+        ${tile('Max players per server', g.maxPlayers)}
+      </div><div class="row">
+        ${tile('Visits', fmt(g.visits), nf.format(g.visits))}
+        ${tile('Favorites', nf.format(g.favoritedCount))}
+        ${tile('Rating', rating, nf.format(vt.upVotes)+' up · '+nf.format(vt.downVotes)+' down')}
+        ${tile('Active servers', servers.length?servers.length+(servers.length>=100?'+':''):'–', 'public')}
+        ${tile('Avg players / server', servers.length?avg(servers.map(s=>s.playing)).toFixed(1):'–')}
+        ${tile('Avg ping', pings.length?Math.round(avg(pings))+' ms':'–')}
+        ${tile('Avg server FPS', fpss.length?Math.round(avg(fpss)):'–')}
+        ${tile('Players / visits', g.visits? (g.playing/g.visits*1000).toFixed(2)+'‰':'–')}
+      </div>`;
+    document.getElementById('glance').innerHTML = [
+      ['Genre', g.genre_l1||g.genre||'–'], ['Price', g.price? g.price+' R$' : 'Free'],
+      ['Created', date(g.created)], ['Updated', date(g.updated)],
+      ['Universe ID', g.id], ['Place ID', g.rootPlaceId]
+    ].map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+    localHist = h; renderCcu();
+  }catch(e){
+    console.warn(e);
+    document.getElementById('err').textContent = 'Could not fetch data: '+e.message;
+  }
+}
+load();
+setInterval(load, CONFIG.refreshMs);
+loadCreator();
+</script>
+</body>
+</html>

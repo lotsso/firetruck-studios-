@@ -1,23 +1,210 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Statystyki</title>
-</head>
-<body style="font-family:monospace;background:#000;color:#eee;margin:12px">
-<pre id="o">Ladowanie...</pre>
-<button onclick="load()">Odswiez</button>
-<script>
-var o = document.getElementById("o");
-try { var c = localStorage.getItem("s"); if (c) o.textContent = c + "\n\n(zapisane, odswiezam...)"; } catch (e) {}
-function load() {
-  fetch("/api/stats").then(function (r) { return r.text(); }).then(function (t) {
-    o.textContent = t;
-    try { localStorage.setItem("s", t); } catch (e) {}
-  }).catch(function () { o.textContent += "\n\nBrak internetu, pokazuje ostatnie dane."; });
+<title>Pink Petal Studio</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#3a1230; --petal:#ff6fa8; --deep:#d63c82; --blush:#ffe3ee; --cream:#fff8fb; --leaf:#2f9e78;
+  --display:'Fraunces',Georgia,serif; --body:'Figtree',system-ui,sans-serif;
 }
-load();
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--ink);background:var(--cream);line-height:1.6}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+/* NAV */
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 5vw;background:#fff;position:sticky;top:0;z-index:10}
+.logo{font-family:var(--display);font-weight:900;font-size:1.3rem;display:flex;align-items:center;gap:10px}
+.logo img{width:46px;height:46px;object-fit:contain;display:block;margin:-6px 0}
+nav ul{display:flex;gap:32px;list-style:none;font-weight:500}
+nav a:hover{color:var(--deep)}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;text-align:center;padding:110px 5vw 170px;
+  background:radial-gradient(circle at 20% 20%,#ff9cc4 0,transparent 45%),radial-gradient(circle at 85% 70%,#ffc2da 0,transparent 50%),var(--blush)}
+.petal{position:absolute;width:var(--s);height:var(--s);background:var(--c);border-radius:50% 0 50% 50%;opacity:.55;
+  left:var(--x);top:-60px;animation:fall var(--d) linear infinite;animation-delay:var(--l)}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+.hero h1{position:relative;font-family:var(--display);font-weight:900;font-size:clamp(3.4rem,11vw,9rem);line-height:.92;letter-spacing:-.04em;color:var(--ink)}
+.hero h1 span{display:block;color:var(--deep);font-style:italic}
+.tags{position:relative;margin:36px 0;font-size:clamp(1rem,2.2vw,1.5rem);font-weight:500;display:flex;gap:14px 34px;justify-content:center;flex-wrap:wrap}
+.tags b{font-weight:500;padding-left:34px;position:relative}
+.tags b:first-child{padding-left:0}
+.tags b:not(:first-child)::before{content:"";position:absolute;left:0;top:50%;width:10px;height:10px;margin-top:-5px;background:var(--deep);border-radius:50% 0 50% 50%}
+.cta{position:relative;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{padding:16px 34px;border-radius:16px;font-weight:600;font-size:1.1rem;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.main{background:var(--ink);color:#fff}
+.btn.ghost{border:2px solid var(--ink)}
+
+/* STATS */
+.stats{position:relative;display:flex;justify-content:center;gap:clamp(24px,7vw,100px);flex-wrap:wrap;margin-top:70px}
+.stat{text-align:center;min-width:140px}
+.stat .num{font-family:var(--display);font-weight:900;font-size:clamp(2.6rem,6vw,4.4rem);line-height:1;font-variant-numeric:tabular-nums}
+.stat .lbl{margin-top:6px;font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.stat .lbl::after{content:"";width:8px;height:8px;border-radius:50%;background:#9a7a8e}
+.stats.live .lbl::after{background:var(--leaf);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.wave{position:absolute;left:0;bottom:-1px;width:100%;height:90px}
+
+/* SECTIONS */
+section.block{padding:90px 5vw;max-width:1150px;margin:auto}
+h2{font-family:var(--display);font-weight:900;font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.03em;margin-bottom:12px}
+.lead{max-width:60ch;margin-bottom:44px;color:#6b4a5f}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px}
+.game{border-radius:28px 28px 28px 6px;padding:28px;min-height:230px;display:flex;flex-direction:column;justify-content:flex-end;background:var(--bg);color:var(--fg,var(--ink))}
+.game:nth-child(2){border-radius:28px 6px 28px 28px}
+.game h3{font-family:var(--display);font-size:1.6rem}
+.game p{opacity:.85}
+.services{background:var(--ink);color:#fff;max-width:none}
+.services .in{max-width:1150px;margin:auto}
+.services .lead{color:#e8c7da}
+.svc{border-top:2px solid var(--petal);padding-top:16px}
+.svc h3{font-family:var(--display);font-size:1.3rem;margin-bottom:6px}
+.svc p{color:#e8c7da}
+.contact{text-align:center}
+.contact a.mail{display:inline-block;font-family:var(--display);font-weight:900;font-size:clamp(1.4rem,4vw,2.6rem);color:var(--deep);border-bottom:3px solid var(--petal)}
+.gl{display:flex;flex-direction:column;gap:14px;max-width:560px}
+.gcard{display:flex;gap:16px;align-items:center;background:#fff;border-radius:20px 20px 20px 6px;padding:14px;box-shadow:0 8px 24px rgba(214,60,130,.14);transition:transform .15s,box-shadow .15s}
+.gcard:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(214,60,130,.24)}
+.gcard img{width:84px;height:84px;border-radius:16px;object-fit:cover;background:var(--blush);flex:none}
+.gcard h3{font-family:var(--display);font-size:1.15rem;line-height:1.25;margin-bottom:8px}
+.gcard .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.9rem;color:#6b4a5f}
+.gcard .meta b{color:var(--ink);font-weight:600}
+.gcard .live{width:8px;height:8px;border-radius:50%;background:var(--leaf);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+footer{text-align:center;padding:30px;color:#9a7a8e;font-size:.9rem}
+
+@media (max-width:640px){nav ul{gap:16px;font-size:.9rem}.logo span{display:none}}
+@media (prefers-reduced-motion:reduce){.petal,.stats.live .lbl::after{animation:none}.petal{top:20%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#"><img src="logo.png" alt="Pink Petal Studio logo"><span>Pink Petal Studio</span></a>
+  <ul>
+    <li><a href="#games">Portfolio</a></li>
+    <li><a href="#achievements">Achievements</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <div id="petals" aria-hidden="true"></div>
+  <h1>Pink Petal <span>Studio</span></h1>
+  <p class="tags"><b>Game development</b><b>Metaverse</b><b>Digital experiences</b></p>
+  <div class="cta">
+    <a class="btn main" href="#games">Explore projects</a>
+    <a class="btn ghost" href="#contact">Contact us</a>
+  </div>
+
+  <!-- STATS: values are filled in by the API (see CONFIG in shared.js) -->
+  <div class="stats" id="stats" aria-live="polite">
+    <div class="stat" data-key="totalVisits"><div class="num">–</div><div class="lbl">Total visits</div></div>
+    <div class="stat" data-key="playersOnline"><div class="num">–</div><div class="lbl">Players online</div></div>
+    <div class="stat" data-key="games"><div class="num">–</div><div class="lbl">Games</div></div>
+  </div>
+
+  <svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 60C240 0 480 0 720 40s480 40 720-10V90H0z" fill="#fff8fb"/>
+  </svg>
+</header>
+
+<section class="block" id="achievements">
+  <h2>Achievements</h2>
+  <p class="lead">A place for awards, player records and platform recognition. Add your own here.</p>
+</section>
+
+<section class="block services" id="services">
+  <div class="in">
+    <h2>Services</h2>
+    <p class="lead">From idea to a game people want to recommend to their friends.</p>
+    <div class="grid">
+      <div class="svc"><h3>Game design</h3><p>Mechanics, balance and gameplay loops.</p></div>
+      <div class="svc"><h3>Worlds and art</h3><p>Map building, 3D models and interfaces.</p></div>
+      <div class="svc"><h3>Scripting and support</h3><p>Programming, updates and ongoing care for your game.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block contact" id="contact">
+  <h2>Let's talk about your game</h2>
+  <p class="lead" style="margin-inline:auto">Tell us what you want to build and we will reply with a plan.</p>
+  <a class="mail" href="mailto:hello@pinkpetal.studio">hello@pinkpetal.studio</a>
+</section>
+
+<section class="block" id="games">
+  <h2>Our games</h2>
+  <p class="lead">Click a game to see its full statistics.</p>
+  <div class="gl" id="gameList"><p class="lead">Loading game…</p></div>
+</section>
+
+<footer>© <span id="yr"></span> Pink Petal Studio</footer>
+
+<script src="shared.js"></script>
+<script>
+const current = {};
+function show(key, value){
+  const el = document.querySelector(`[data-key="${key}"] .num`);
+  if(!el || typeof value !== 'number') return;
+  const from = current[key] || 0, t0 = performance.now(), dur = 1200;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = fmt(value); current[key]=value; return; }
+  (function step(t){
+    const p = Math.min((t-t0)/dur,1), e = 1-Math.pow(1-p,3);
+    el.textContent = fmt(from + (value-from)*e);
+    if(p<1) requestAnimationFrame(step); else current[key]=value;
+  })(t0);
+}
+function renderGames(games){
+  document.getElementById('gameList').innerHTML = games.map(g => `
+    <a class="gcard" href="stats.html?id=${encodeURIComponent(g.inputId)}">
+      ${g.icon ? `<img src="${esc(g.icon)}" alt="" loading="lazy">` : ''}
+      <div>
+        <h3>${esc(g.name)}</h3>
+        <div class="meta">
+          <span><i class="live"></i><b>${nf.format(g.playing)}</b> online</span>
+          <span><b>${fmt(g.visits)}</b> visits</span>
+          <span><b>${nf.format(g.favoritedCount)}</b> favorites</span>
+        </div>
+      </div>
+    </a>`).join('');
+}
+async function loadStats(){
+  const box = document.getElementById('stats');
+  try{
+    const games = await fetchGames();
+    if(!games.length) throw new Error('No games found');
+    box.classList.add('live');
+    show('totalVisits',   games.reduce((a,g)=>a+g.visits,0));
+    show('playersOnline', games.reduce((a,g)=>a+g.playing,0));
+    show('games',         games.length);
+    renderGames(games);
+  }catch(err){
+    console.warn('Could not fetch data from Roblox:', err);
+    box.classList.remove('live');
+    if(!document.querySelector('.gcard')) document.getElementById('gameList').innerHTML =
+      '<p class="lead">Could not load the game. Check the ID in shared.js.</p>';
+  }
+}
+loadStats();
+if(CONFIG.refreshMs) setInterval(loadStats, CONFIG.refreshMs);
+
+/* ---------- background petals ---------- */
+const wrap = document.getElementById('petals');
+const cols = ['#ff6fa8','#ffa3c6','#d63c82','#fff'];
+for(let i=0;i<18;i++){
+  const p = document.createElement('i'); p.className='petal';
+  p.style.cssText = `--x:${Math.random()*100}%;--s:${10+Math.random()*20}px;--c:${cols[i%4]};--d:${9+Math.random()*10}s;--l:-${Math.random()*14}s`;
+  wrap.appendChild(p);
+}
+document.getElementById('yr').textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
