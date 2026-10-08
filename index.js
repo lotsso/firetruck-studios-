@@ -20,7 +20,7 @@ async function queryMetric(env, metric, startTime, endTime) {
   }
   if (!r.ok && r.status !== 202) throw new Error(`${metric}: HTTP ${r.status}`);
   let op = await r.json();
-  for (let i = 0; i < 10 && !op.done; i++) {
+  for (let i = 0; i < 6 && !op.done; i++) {
     await sleep(1000);
     r = await fetch(`${BASE}/${op.path}`, { headers: h });
     if (!r.ok) throw new Error(`${metric}: poll HTTP ${r.status}`);
@@ -37,13 +37,19 @@ async function analytics(request, env, ctx) {
     return json({ error: 'Missing ROBLOX_API_KEY (secret) or UNIVERSE_ID (variable) on this Worker' }, 500);
   // Always fetch the full history once (16 queries) and cache it; the page filters periods itself.
   // This avoids Roblox's rate limit (30 queries/min) when switching periods.
-  const span = 1468;
   const key = new Request('https://cache.local/analytics-full');
   const cached = await caches.default.match(key);
   if (cached) return new Response(await cached.text(), { headers: { 'Content-Type': 'application/json' } });
 
   const end = Math.floor(Date.now() / DAY) * DAY + DAY;
-  const start = end - span * DAY, iso = t => new Date(t).toISOString();
+  // Start at the game's creation date (small range = fast, synchronous answers); fall back to 180 days.
+  let start = end - 180 * DAY;
+  try {
+    const g = (await (await fetch(`https://games.roblox.com/v1/games?universeIds=${env.UNIVERSE_ID}`)).json()).data?.[0];
+    if (g?.created) start = Math.floor(Date.parse(g.created) / DAY) * DAY - DAY;
+  } catch (e) {}
+  start = Math.max(start, end - 1400 * DAY);
+  const span = Math.round((end - start) / DAY), iso = t => new Date(t).toISOString();
   const res = await Promise.allSettled(METRICS.map(m => queryMetric(env, m, iso(start), iso(end))));
   const data = {}, errors = {};
   res.forEach((r, i) => r.status === 'fulfilled' ? data[METRICS[i]] = r.value : errors[METRICS[i]] = r.reason.message);

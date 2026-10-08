@@ -168,7 +168,7 @@ function renderKpis(){
   if(r){ document.getElementById('mTitle').textContent=r.label; const cn=n===1?7:n, cp=r.pts?split(r.pts,cn,end):[r.cur,r.prev];   // 1d: chart shows the last 7 days
     drawChart(document.getElementById('mChart'),cp[0],cp[1],r.f,cn||1); }
   const errs=Object.keys(an.errors||{});
-  note.textContent=errs.length?'No data for: '+errs.join(', ')+' (metric not available for this game or account).':'Daily data in UTC. Today may still be incomplete.';
+  note.textContent=errs.length?'No data for: '+errs.join(', ')+'. First error: '+an.errors[errs[0]]:'Daily data in UTC. Today may still be incomplete.';
 }
 
 async function loadCreator(){
