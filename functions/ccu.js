@@ -6,7 +6,14 @@ const json = (o, status = 200) => new Response(JSON.stringify(o), { status, head
 
 export async function onRequestGet({ request, env, waitUntil }) {
   if (!env.DB) return json({ error: 'No D1 database bound as DB on this Pages project' }, 404);
-  const days = Math.min(Math.max(parseInt(new URL(request.url).searchParams.get('days')) || 1, 1), 200);
+  const url = new URL(request.url);
+  if (url.searchParams.has('latest')) {   // newest sample only (live player count for the site)
+    let r = null;
+    try { r = await env.DB.prepare('SELECT t, v FROM ccu ORDER BY t DESC LIMIT 1').first(); } catch (e) {}
+    return new Response(JSON.stringify({ now: Date.now(), t: r?.t ?? null, v: r?.v ?? null }),
+      { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  }
+  const days = Math.min(Math.max(parseInt(url.searchParams.get('days')) || 1, 1), 200);
   const key = new Request(`https://cache.local/ccu?days=${days}`);
   const cached = await caches.default.match(key);
   if (cached) return new Response(await cached.text(), { headers: { 'Content-Type': 'application/json' } });

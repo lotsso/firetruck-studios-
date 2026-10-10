@@ -286,6 +286,7 @@ async function load(){
     ]);
     const g = info.data[0]; if(!g) throw new Error('No game found for ID '+gid);
     g.name = CONFIG.names?.[gid] || g.name;
+    if(gid === CONFIG.games[0]){ const live = await latestCcu(); if(live != null) g.playing = live; }   // minute-fresh count from the recorder
     const vt = votes.data[0] || {upVotes:0,downVotes:0};
     let servers=[]; try{ servers=(await getJSON(api('games',`/v1/games/${g.rootPlaceId}/servers/Public?sortOrder=Desc&limit=100`))).data||[]; }catch(e){}
 
