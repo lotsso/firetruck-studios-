@@ -3,6 +3,7 @@
    ============================================================ */
 const CONFIG = {
   games: ['75987095614345'],   // Roblox game IDs
+  names: { '75987095614345': '+1 Firefighter Evolution' },   // optional display names (Roblox returns the original title)
   idType: 'place',             // 'place' (the ID from the game link) or 'universe'
   apiDomain: 'roproxy.com',    // CORS proxy; put your own proxy here
   refreshMs: 30000,
@@ -37,7 +38,7 @@ async function fetchGames(){
     getJSON(api('thumbnails', `/v1/games/icons?universeIds=${list}&returnPolicy=PlaceHolder&size=256x256&format=Png&isCircular=false`)).catch(()=>({data:[]}))
   ]);
   return info.data.map((g,i) => ({
-    ...g, inputId: CONFIG.games[i],
+    ...g, inputId: CONFIG.games[i], name: CONFIG.names?.[CONFIG.games[i]] || g.name,
     icon: (icons.data.find(x=>x.targetId===g.id)||{}).imageUrl
   }));
 }
