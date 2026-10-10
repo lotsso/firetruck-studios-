@@ -125,7 +125,7 @@ html{background:var(--bg);color-scheme:dark}
 <script>
 
 /* ---------- periods, charts, creator metrics ---------- */
-const PERIODS = {'1d':1,'7d':7,'14d':14,'28d':28,'56d':56,'90d':90,'All':0};
+const PERIODS = {'15m':15/1440,'30m':30/1440,'1h':1/24,'1d':1,'7d':7,'14d':14,'28d':28,'56d':56,'90d':90,'All':0};   // in days
 const DAY = 864e5;
 let period='7d', showPrev=false, selected='DailyActiveUsers', localHist=[], ccuData=null, an=null;
 const METRICS=[
@@ -209,7 +209,7 @@ function renderCcu(){
 }
 
 function renderKpis(){
-  const n=PERIODS[period], box=document.getElementById('kpis'), note=document.getElementById('creatorNote');
+  const n=PERIODS[period]&&Math.max(1,PERIODS[period]), box=document.getElementById('kpis'), note=document.getElementById('creatorNote');   // daily data: <1d periods show the latest day
   if(!an){
     box.innerHTML=METRICS.map(m=>`<div class="kpi na"><div class="k">${m[1]}</div><div class="v">–</div></div>`).join('');
     document.getElementById('mTitle').textContent=''; document.getElementById('mChart').innerHTML='';
