@@ -51,7 +51,48 @@ h2{font-family:var(--display);font-size:1.2rem;margin-bottom:14px}
 .kpi .v{font-size:1.5rem}
 .up{color:var(--ok)}.down{color:#ff7a7a}
 .kpi.na .v{color:#7d5a70}
-@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+
+/* ---------- dark ambience + animations ---------- */
+html{background:var(--bg);color-scheme:dark}
+body{background:transparent}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;
+  background:radial-gradient(40vw 40vw at 15% 10%,rgba(214,60,130,.22),transparent 60%),
+    radial-gradient(35vw 35vw at 85% 30%,rgba(123,60,255,.15),transparent 60%),
+    radial-gradient(30vw 30vw at 50% 95%,rgba(255,111,168,.12),transparent 60%)}
+::selection{background:var(--deep);color:#fff}
+.back .blogo{box-shadow:0 0 0 2px rgba(255,111,168,.35),0 0 16px rgba(255,111,168,.45);transition:transform .7s cubic-bezier(.3,1.6,.5,1)}
+.back:hover .blogo{transform:rotate(360deg) scale(1.08)}
+.head img{box-shadow:0 0 0 1px var(--line),0 10px 30px -10px rgba(255,111,168,.6)}
+.v.big{background:linear-gradient(180deg,#fff 30%,#ffb3d1);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 18px rgba(255,111,168,.45))}
+.panel{transition:border-color .3s,box-shadow .3s}
+.panel:hover{border-color:#5e2d52;box-shadow:0 20px 50px -30px rgba(255,111,168,.55)}
+.seg button,.prevbtn{transition:background-color .25s,color .25s}
+.seg button:hover,.prevbtn:hover{color:var(--text)}
+.kpi{transition:transform .2s,border-color .2s,box-shadow .2s,background-color .2s}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 26px -14px rgba(255,111,168,.6)}
+.kpi[aria-pressed=true]{box-shadow:0 0 0 1px var(--petal),0 0 22px -4px rgba(255,111,168,.55)}
+.dot{animation:ping 2s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}70%,100%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
+svg .ping{transform-box:fill-box;transform-origin:center;animation:ring 2s ease-out infinite}
+@keyframes ring{from{transform:scale(1);opacity:.9}to{transform:scale(4);opacity:0}}
+@media (prefers-reduced-motion:no-preference){
+  body::before{animation:aurora 24s ease-in-out infinite alternate}
+  @keyframes aurora{to{transform:translate(4vw,-3vh) scale(1.1) rotate(4deg)}}
+  .top,.head,#main,.periods,.layout,body>.panel:last-of-type{animation:up .7s cubic-bezier(.2,.8,.2,1) backwards}
+  .head{animation-delay:.08s} #main{animation-delay:.16s} .periods{animation-delay:.24s}
+  .layout{animation-delay:.32s} body>.panel:last-of-type{animation-delay:.4s}
+  @keyframes up{from{opacity:0;transform:translateY(22px);filter:blur(6px)}}
+  /* charts draw themselves when the view (period / metric / comparison) changes */
+  .draw .ln{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s cubic-bezier(.6,0,.2,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .draw .area,.draw .pv{animation:fade 1s .5s backwards}
+  .draw .pk{animation:fade .5s 1.3s backwards}
+  .draw .pt{transform-box:fill-box;transform-origin:center;animation:pop .5s 1.2s cubic-bezier(.3,1.8,.5,1) backwards}
+  @keyframes fade{from{opacity:0}}
+  @keyframes pop{from{transform:scale(0)}}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -115,7 +156,11 @@ function split(points, n, end){            // n=0 => whole range
   return [points.filter(p=>p[0]>=end-n*DAY), points.filter(p=>p[0]<end-n*DAY && p[0]>=end-2*n*DAY)];
 }
 function drawChart(el, cur, prev, f, n){
-  if(cur.length<2){ el.innerHTML='<p class="sub">Not enough data to draw a chart for this period.</p>'; return; }
+  if(cur.length<2){ el.innerHTML='<p class="sub">Not enough data to draw a chart for this period.</p>'; delete el.dataset.view; return; }
+  // animate only when the view changes, not on the 30s refresh (but keep animating if data lands mid-animation)
+  const view=[period,showPrev,n,el.id==='mChart'?selected:''].join('|'), now=performance.now(), changed=el.dataset.view!==view;
+  if(changed){ el.dataset.view=view; el.dataset.t=now; }
+  const anim=changed||now-(+el.dataset.t||0)<1500;
   const W=900,H=260,L=48,B=26,T=14,R=14, t0=cur[0][0], t1=cur[cur.length-1][0];
   const pv=showPrev?prev.map(p=>[p[0]+n*DAY,p[1]]):[];
   const max=Math.max(1e-9,...cur.map(p=>p[1]),...pv.map(p=>p[1]))*1.15;
@@ -124,12 +169,13 @@ function drawChart(el, cur, prev, f, n){
   const grid=[0,.25,.5,.75,1].map(k=>{const v=max*k;return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#4a2440" stroke-dasharray="2 4"/><text x="${L-6}" y="${y(v)+4}" fill="#c9a3ba" font-size="11" text-anchor="end">${f==='pct'?v.toFixed(0)+'%':fv('int',v).replace(/\s?(R\$|h|min)$/,'')}</text>`}).join('');
   const lab=t=> (t1-t0<=2*DAY) ? new Date(t).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : new Date(t).toLocaleDateString('en-US',{day:'numeric',month:'short'});
   const mx=cur.reduce((a,p)=>p[1]>a[1]?p:a), last=cur[cur.length-1];
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Chart">${grid}
-   ${pv.length>1?`<polyline points="${line(pv)}" fill="none" stroke="#c9a3ba" stroke-width="2" stroke-dasharray="5 4"/>`:''}
-   <polygon points="${x(t0)},${H-B} ${line(cur)} ${x(t1)},${H-B}" fill="rgba(255,111,168,.15)"/>
-   <polyline points="${line(cur)}" fill="none" stroke="#ff6fa8" stroke-width="2.5" stroke-linejoin="round"/>
-   <circle cx="${x(mx[0])}" cy="${y(mx[1])}" r="4" fill="#ff6fa8"/><text x="${Math.min(x(mx[0]),W-70)}" y="${y(mx[1])-9}" fill="#fff1f7" font-size="11">Peak ${fv(f,mx[1])}</text>
-   <circle cx="${x(last[0])}" cy="${y(last[1])}" r="4.5" fill="#ff6fa8"/>
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Chart"${anim?' class="draw"':''}>${grid}
+   ${pv.length>1?`<polyline class="pv" points="${line(pv)}" fill="none" stroke="#c9a3ba" stroke-width="2" stroke-dasharray="5 4"/>`:''}
+   <polygon class="area" points="${x(t0)},${H-B} ${line(cur)} ${x(t1)},${H-B}" fill="rgba(255,111,168,.15)"/>
+   <polyline class="ln" pathLength="1" points="${line(cur)}" fill="none" stroke="#ff6fa8" stroke-width="2.5" stroke-linejoin="round"/>
+   <circle class="pt" cx="${x(mx[0])}" cy="${y(mx[1])}" r="4" fill="#ff6fa8"/><text class="pk" x="${Math.min(x(mx[0]),W-70)}" y="${y(mx[1])-9}" fill="#fff1f7" font-size="11">Peak ${fv(f,mx[1])}</text>
+   <circle class="ping" cx="${x(last[0])}" cy="${y(last[1])}" r="4.5" fill="none" stroke="#ff6fa8" stroke-width="1.5"/>
+   <circle class="pt" cx="${x(last[0])}" cy="${y(last[1])}" r="4.5" fill="#ff6fa8"/>
    <text x="${L}" y="${H-6}" fill="#c9a3ba" font-size="11">${lab(t0)}</text><text x="${W-R}" y="${H-6}" fill="#c9a3ba" font-size="11" text-anchor="end">${lab(t1)}</text></svg>`;
 }
 
