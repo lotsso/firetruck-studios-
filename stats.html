@@ -31,7 +31,14 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.03em;font-size:cl
 h2{font-family:var(--display);font-size:1.2rem;margin-bottom:14px}
 .layout{display:grid;grid-template-columns:2fr 1fr;gap:18px}
 @media(max-width:900px){.layout{grid-template-columns:1fr}}
-.chart svg{width:100%;height:auto;display:block}
+.chart svg,#mChart svg{width:100%;height:auto;display:block}
+#chart,#mChart{position:relative;touch-action:pan-y}
+.tip{position:absolute;z-index:2;pointer-events:none;white-space:nowrap;padding:8px 11px;font-size:.8rem;line-height:1.4;
+  background:#1f121b;border:1px solid #3a2433;box-shadow:0 10px 24px rgba(0,0,0,.5);transform:translate(-50%,calc(-100% - 14px))}
+.tip.below{transform:translate(-50%,14px)}
+.tip .d{color:var(--mute)}
+.tip b{display:block;font-size:1.05rem;color:var(--text)}
+.tip .p{display:block;color:var(--mute)}
 .glance dl{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:.92rem}
 .glance dt{color:var(--mute)}
 .note{color:var(--mute);font-size:.85rem;margin-top:14px}
@@ -124,7 +131,7 @@ const METRICS=[
  ['DailyActiveUsers','DAU','avg','int'],['MonthlyActiveUsers','MAU','avg','int'],
  ['AveragePlayTimeMinutesPerDAU','Average playtime','avg','min'],['TotalPlayTimeHours','Total playtime','sum','hrs'],
  ['AverageSessionLengthMinutes','Avg session time','avg','min'],['Visits','Sessions','sum','int'],
- ['DailyRevenue','Daily revenue','sum','rbx'],['PayingUsers','Paying users','avg','int'],
+ ['DailyRevenue','Revenue','sum','rbx'],['PayingUsers','Paying users','avg','int'],
  ['PayingUsersCVR','Player conversion rate','avg','pct'],['AverageRevenuePerPayingUser','Avg revenue per paying user','avg','rbx'],
  ['AverageRevenuePerUser','Avg revenue per DAU','avg','dec'],['RFYPlayThroughRate','Play through rate','avg','pct'],
  ['ForwardD1Retention','Day 1 retention','avg','pct'],['ForwardD7Retention','Day 7 retention','avg','pct'],
@@ -156,7 +163,38 @@ function drawChart(el, cur, prev, f, n){
    <polyline class="ln" pathLength="1" points="${line(cur)}" fill="none" stroke="#ff6fa8" stroke-width="2.5" stroke-linejoin="round"/>
    <circle class="pt" cx="${x(mx[0])}" cy="${y(mx[1])}" r="4" fill="#ff6fa8"/><text class="pk" x="${Math.min(x(mx[0]),W-70)}" y="${y(mx[1])-9}" fill="#fff1f7" font-size="11">Peak ${fv(f,mx[1])}</text>
    <circle class="pt" cx="${x(last[0])}" cy="${y(last[1])}" r="4.5" fill="#ff6fa8"/>
-   <text x="${L}" y="${H-6}" fill="#c9a3ba" font-size="11">${lab(t0)}</text><text x="${W-R}" y="${H-6}" fill="#c9a3ba" font-size="11" text-anchor="end">${lab(t1)}</text></svg>`;
+   <text x="${L}" y="${H-6}" fill="#c9a3ba" font-size="11">${lab(t0)}</text><text x="${W-R}" y="${H-6}" fill="#c9a3ba" font-size="11" text-anchor="end">${lab(t1)}</text>
+   <g class="hov" visibility="hidden" pointer-events="none"><line class="hx" y1="${T}" y2="${H-B}" stroke="#ff6fa8" stroke-opacity=".55" stroke-dasharray="3 3"/>
+   <circle class="hp" r="3.5" fill="#c9a3ba"/><circle class="hd" r="5" fill="#ff6fa8" stroke="#0b0709" stroke-width="2"/></g></svg><div class="tip" hidden></div>`;
+  // hover readout: values for the day (or sample) under the mouse
+  el._c={cur,pv,x,y,f,W,H,n,sub:cur[1][0]-cur[0][0]<DAY};
+  if(!el._hover){ el._hover=true;
+    el.addEventListener('pointermove',e=>{ el._last=e; chartHover(el); });
+    el.addEventListener('pointerdown',e=>{ el._last=e; chartHover(el); });
+    el.addEventListener('pointerleave',()=>{ el._last=null; chartHover(el); });
+  }
+  chartHover(el);   // keep the readout in place when the 30s refresh redraws the chart
+}
+function chartHover(el){
+  const c=el._c, e=el._last, svg=el.querySelector('svg'), g=el.querySelector('.hov'), tip=el.querySelector('.tip');
+  if(!c||!svg||!g||!tip) return;
+  if(!e){ g.setAttribute('visibility','hidden'); tip.hidden=true; return; }
+  const r=svg.getBoundingClientRect(), sx=(e.clientX-r.left)/r.width*c.W;
+  const near=(a,t)=>a.reduce((b,q)=>Math.abs(q[0]-t)<Math.abs(b[0]-t)?q:b,a[0]);
+  const p=near(c.cur, c.cur[0][0]+(sx-c.x(c.cur[0][0]))/(c.x(c.cur[c.cur.length-1][0])-c.x(c.cur[0][0])||1)*(c.cur[c.cur.length-1][0]-c.cur[0][0]));
+  const step=c.cur[1][0]-c.cur[0][0], q=c.pv.length?near(c.pv,p[0]):null, pq=q&&Math.abs(q[0]-p[0])<=step/2?q:null;
+  const px=c.x(p[0]), py=c.y(p[1]), hx=g.querySelector('.hx'), hd=g.querySelector('.hd'), hp=g.querySelector('.hp');
+  hx.setAttribute('x1',px); hx.setAttribute('x2',px); hd.setAttribute('cx',px); hd.setAttribute('cy',py);
+  if(pq){ hp.setAttribute('cx',px); hp.setAttribute('cy',c.y(pq[1])); hp.setAttribute('visibility','visible'); } else hp.setAttribute('visibility','hidden');
+  g.setAttribute('visibility','visible');
+  const date=t=>c.sub ? new Date(t).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})
+                      : new Date(t).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+  tip.innerHTML=`<span class="d">${date(p[0])}</span><b>${fv(c.f,p[1])}</b>${pq?`<span class="p">Previous (${date(pq[0]-c.n*DAY)}): ${fv(c.f,pq[1])}</span>`:''}`;
+  tip.hidden=false;
+  const left=px/c.W*r.width, top=py/c.H*r.height, half=tip.offsetWidth/2;
+  tip.style.left=Math.min(Math.max(left,half),r.width-half)+'px';
+  tip.style.top=top+'px';
+  tip.classList.toggle('below', top < tip.offsetHeight+18);
 }
 
 function renderCcu(){
