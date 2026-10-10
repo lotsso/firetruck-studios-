@@ -198,10 +198,11 @@ function chartHover(el){
   tip.classList.toggle('below', top < tip.offsetHeight+18);
 }
 
+const hasCcu=()=>!!(ccuData&&ccuData.points&&ccuData.points.length>1);
 function renderCcu(){
   const n=PERIODS[period], el=document.getElementById('chart'), note=document.getElementById('chartNote');
   let pts, end;
-  if(ccuData){ pts=ccuData.points; end=ccuData.now; note.textContent='Samples every 15 minutes, stored by your Worker.'; }
+  if(hasCcu()){ pts=ccuData.points; end=ccuData.now; note.textContent='Recorded every minute by the Worker, even when nobody has this page open. Older than 2 days: highest value per 15 minutes.'; }
   else { pts=localHist; end=Date.now(); note.textContent='Without the Worker, history is built only from samples collected in this browser while the page is open (7 days max).'; }
   const [cur,prev]=split(pts,n||90,end);
   drawChart(el,cur,prev,'int',n||90);
@@ -249,6 +250,7 @@ async function loadCreator(){
   try{
     const [a,c]=await Promise.all([getJSON(`${base}/analytics?days=all`), getJSON(`${base}/ccu?days=90`).catch(()=>null)]);
     an=a; ccuData=c; renderKpis(); renderCcu();
+    setInterval(async()=>{ try{ ccuData=await getJSON(`${base}/ccu?days=90`); renderCcu(); }catch(e){} }, 60000);
   }catch(e){ an=null; renderKpis(); note.textContent='Could not fetch data from the Worker: '+e.message; }
 }
 
@@ -288,7 +290,8 @@ async function load(){
     let servers=[]; try{ servers=(await getJSON(api('games',`/v1/games/${g.rootPlaceId}/servers/Public?sortOrder=Desc&limit=100`))).data||[]; }catch(e){}
 
     const h = pushSample(u, g.playing);
-    const vals = h.map(p=>p[1]), day = h.filter(p=>Date.now()-p[0]<864e5).map(p=>p[1]), wk = vals;
+    const srv = hasCcu(), src = srv ? ccuData.points : h;
+    const day = src.filter(p=>Date.now()-p[0]<864e5).map(p=>p[1]), wk = src.filter(p=>Date.now()-p[0]<7*864e5).map(p=>p[1]);
     const total = vt.upVotes+vt.downVotes, rating = total? (vt.upVotes/total*100).toFixed(1)+'%' : '–';
     const pings = servers.map(s=>s.ping).filter(Number.isFinite), fpss = servers.map(s=>s.fps).filter(Number.isFinite);
 
@@ -302,8 +305,8 @@ async function load(){
     document.getElementById('main').innerHTML =
       `<div class="row">
         <div><div class="k"><i class="dot"></i>Playing now (CCU)</div><div class="v big">${nf.format(g.playing)}</div></div>
-        ${tile('Average (24h samples)', nf.format(Math.round(avg(day))), 'from '+day.length+' samples')}
-        ${tile('Peak (recorded)', nf.format(Math.max(0,...wk)), 'in this browser')}
+        ${tile('Average (24h)', nf.format(Math.round(avg(day))), 'from '+day.length+(srv?' minutes':' samples in this browser'))}
+        ${tile('Peak (7 days)', nf.format(Math.max(0,...wk)), srv?'recorded every minute':'in this browser')}
         ${tile('Max players per server', g.maxPlayers)}
       </div><div class="row">
         ${tile('Visits', fmt(g.visits), nf.format(g.visits))}
