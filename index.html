@@ -7,13 +7,13 @@
 <title>Pink Petal Studio</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');</script>
 <style>
 :root{
   --bg:#0b0709; --card:#140d12; --line:#2a1a25; --text:#f6eef3; --mute:#b9a3b1; --dim:#7d6876;
   --accent:#ff6fa8; --leaf:#4ade80; --ease:cubic-bezier(.2,.8,.2,1);
-  --display:'Fraunces',Georgia,serif; --body:'Figtree',system-ui,sans-serif;
+  --display:'Inter',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0}
@@ -27,7 +27,7 @@ a{color:inherit;text-decoration:none}
 /* NAV */
 nav{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 5vw;position:sticky;top:0;z-index:10;
   background:rgba(11,7,9,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.logo{font-family:var(--display);font-weight:900;font-size:1.2rem;display:flex;align-items:center;gap:12px}
+.logo{font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
 .logo img{width:38px;height:38px;border-radius:50%;object-fit:contain;background:#fff;display:block}
 nav ul{display:flex;gap:32px;list-style:none;font-weight:500}
 nav ul a{position:relative;color:var(--mute);transition:color .2s}
@@ -39,16 +39,16 @@ nav ul a:hover::after,nav ul a:focus-visible::after{transform:scaleX(1)}
 /* HERO */
 .hero{text-align:center;padding:130px 5vw 110px;border-bottom:1px solid var(--line);
   background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(255,111,168,.10),transparent 70%)}
-.hero h1{font-family:var(--display);font-weight:900;font-size:clamp(3rem,10vw,7.5rem);line-height:.95;letter-spacing:-.04em}
-.hero h1 span{display:block;color:var(--accent);font-style:italic}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(2.8rem,9vw,6.5rem);line-height:1;letter-spacing:-.05em}
+.hero h1 span{display:block;color:var(--accent)}
 .tags{margin:30px 0 40px;font-size:clamp(1rem,2vw,1.25rem);color:var(--mute);display:flex;gap:10px 28px;justify-content:center;flex-wrap:wrap}
 .btn{display:inline-block;padding:14px 30px;font-weight:600;background:var(--accent);color:#14060d;transition:background-color .2s,transform .2s var(--ease)}
 .btn:hover{background:#ff8bb9;transform:translateY(-2px)}
 
 /* STATS */
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,200px));justify-content:center;gap:16px;margin-top:70px}
-.stat{padding:22px 16px;background:var(--card);border:1px solid var(--line);text-align:center}
-.stat .num{font-family:var(--display);font-weight:900;font-size:clamp(2rem,5vw,3.2rem);line-height:1;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,220px));justify-content:center;gap:16px;margin-top:70px}
+.stat{min-width:0;padding:24px 12px;background:var(--card);border:1px solid var(--line);text-align:center;container-type:inline-size}
+.stat .num{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,16cqi,2.6rem);line-height:1.1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stat .lbl{margin-top:8px;font-size:.9rem;color:var(--mute);display:inline-flex;align-items:center;gap:8px}
 .stat .lbl::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--dim)}
 .stats.live .lbl::after{background:var(--leaf);animation:ping 2s infinite}
@@ -57,25 +57,22 @@ nav ul a:hover::after,nav ul a:focus-visible::after{transform:scaleX(1)}
 /* SECTIONS */
 section.block{padding:100px 5vw;max-width:1100px;margin:auto}
 section.block + section.block{border-top:1px solid var(--line)}
-h2{font-family:var(--display);font-weight:900;font-size:clamp(2rem,5vw,3rem);letter-spacing:-.03em;margin-bottom:10px}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,4.5vw,2.6rem);letter-spacing:-.04em;margin-bottom:8px}
+h2::before{content:"";display:block;width:36px;height:3px;margin-bottom:16px;background:var(--accent);transform-origin:left;transition:transform .8s .25s var(--ease)}
 .lead{max-width:60ch;margin-bottom:40px;color:var(--mute)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.svc{padding:26px;background:var(--card);border:1px solid var(--line);transition:border-color .25s,transform .25s var(--ease)}
-.svc:hover{border-color:var(--accent);transform:translateY(-3px)}
-.svc .no{display:block;font-size:.85rem;font-weight:600;color:var(--accent);margin-bottom:12px}
-.svc h3{font-family:var(--display);font-size:1.3rem;margin-bottom:6px}
-.svc p{color:var(--mute)}
 
 /* GAMES */
-.gl{display:flex;flex-direction:column;gap:12px;max-width:600px}
-.gcard{display:flex;gap:18px;align-items:center;padding:14px;background:var(--card);border:1px solid var(--line);
+.gl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,280px));gap:16px}
+.gcard{position:relative;display:block;aspect-ratio:1;overflow:hidden;background:var(--card);border:1px solid var(--line);
   transition:border-color .25s,transform .25s var(--ease)}
 .gcard:hover{border-color:var(--accent);transform:translateY(-3px)}
-.gcard img{width:84px;height:84px;object-fit:cover;background:var(--line);flex:none}
-.gcard h3{font-family:var(--display);font-size:1.2rem;line-height:1.25;margin-bottom:6px}
-.gcard .meta{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.9rem;color:var(--mute)}
+.gcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
+.gcard:hover img{transform:scale(1.05)}
+.gcard .info{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;background:linear-gradient(transparent,rgba(8,5,7,.92) 45%)}
+.gcard h3{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.3;letter-spacing:-.01em;margin-bottom:4px}
+.gcard .meta{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:.82rem;color:var(--mute)}
 .gcard .meta b{color:var(--text);font-weight:600}
-.gcard .live{width:7px;height:7px;border-radius:50%;background:var(--leaf);display:inline-block;margin-right:7px;vertical-align:middle;animation:ping 2s infinite}
+.gcard .live{width:7px;height:7px;border-radius:50%;background:var(--leaf);display:inline-block;margin-right:6px;vertical-align:middle;animation:ping 2s infinite}
 footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-top:1px solid var(--line)}
 
 /* MOTION: fade up on load and on scroll (only when the user allows motion) */
@@ -84,21 +81,28 @@ footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-to
 .motion .tags{animation-delay:.12s}
 .motion .hero .btn{animation-delay:.24s}
 .motion .stats{animation-delay:.36s}
-.motion .reveal > :not(.grid),.motion .reveal .grid > *{opacity:0}
-.motion .reveal.shown > :not(.grid),.motion .reveal.shown .grid > *{opacity:1;animation:up .7s var(--ease) backwards;animation-delay:calc(var(--d,0) * 90ms)}
+.motion .reveal > *{opacity:0}
+.motion .reveal.shown > *{opacity:1;animation:rise .9s var(--ease) backwards;animation-delay:calc(var(--d,0) * 110ms)}
+.motion .reveal.shown > .gl{animation-name:tile}
+@keyframes rise{from{opacity:0;transform:translateY(48px)}}
+@keyframes tile{from{opacity:0;transform:translateY(60px) scale(.94)}}
+.motion .reveal h2::before{transform:scaleX(0)}
+.motion .reveal.shown h2::before{transform:scaleX(1)}
+/* scroll progress line */
+#progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:20;background:var(--accent);transform-origin:left;transform:scaleX(var(--p,0));pointer-events:none}
 
-@media (max-width:640px){nav ul{gap:16px;font-size:.9rem}.logo span{display:none}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:16px 6px}}
+@media (max-width:640px){nav ul{gap:16px;font-size:.9rem}.logo span{display:none}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:16px 4px}.gl{grid-template-columns:minmax(0,340px)}.stat .lbl{font-size:.72rem;gap:5px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div id="progress" aria-hidden="true"></div>
 
 <nav>
   <a class="logo" href="#"><img src="logo.png" alt="Pink Petal Studio logo"><span>Pink Petal Studio</span></a>
   <ul>
     <li><a href="#games">Portfolio</a></li>
     <li><a href="#achievements">Achievements</a></li>
-    <li><a href="#services">Services</a></li>
   </ul>
 </nav>
 
@@ -126,29 +130,19 @@ footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-to
   <p class="lead">A place for awards, player records and platform recognition. Add your own here.</p>
 </section>
 
-<section class="block reveal" id="services">
-  <h2>Services</h2>
-  <p class="lead">From idea to a game people want to recommend to their friends.</p>
-  <div class="grid">
-    <div class="svc"><span class="no" aria-hidden="true">01</span><h3>Game design</h3><p>Mechanics, balance and gameplay loops.</p></div>
-    <div class="svc"><span class="no" aria-hidden="true">02</span><h3>Worlds and art</h3><p>Map building, 3D models and interfaces.</p></div>
-    <div class="svc"><span class="no" aria-hidden="true">03</span><h3>Scripting and support</h3><p>Programming, updates and ongoing care for your game.</p></div>
-  </div>
-</section>
-
 <footer>© <span id="yr"></span> Pink Petal Studio</footer>
 
 <script src="shared.js"></script>
 <script>
 const current = {};
-function show(key, value){
+function show(key, value, format = fmt){
   const el = document.querySelector(`[data-key="${key}"] .num`);
   if(!el || typeof value !== 'number') return;
   const from = current[key] || 0, t0 = performance.now(), dur = 1200;
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = fmt(value); current[key]=value; return; }
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = format(value); current[key]=value; return; }
   (function step(t){
     const p = Math.min((t-t0)/dur,1), e = 1-Math.pow(1-p,3);
-    el.textContent = fmt(from + (value-from)*e);
+    el.textContent = format(from + (value-from)*e);
     if(p<1) requestAnimationFrame(step); else current[key]=value;
   })(t0);
 }
@@ -157,7 +151,7 @@ function renderGames(games){
   const html = games.map(g => `
     <a class="gcard" href="stats.html?id=${encodeURIComponent(g.inputId)}">
       ${g.icon ? `<img src="${esc(g.icon)}" alt="" loading="lazy">` : ''}
-      <div>
+      <div class="info">
         <h3>${esc(g.name)}</h3>
         <div class="meta">
           <span><i class="live"></i><b>${nf.format(g.playing)}</b> online</span>
@@ -177,8 +171,8 @@ async function loadStats(){
     if(!games.length) throw new Error('No games found');
     box.classList.add('live');
     show('totalVisits',   games.reduce((a,g)=>a+g.visits,0));
-    show('playersOnline', games.reduce((a,g)=>a+g.playing,0));
-    show('games',         games.length);
+    show('playersOnline', games.reduce((a,g)=>a+g.playing,0), n => nf.format(Math.round(n)));
+    show('games',         games.length,                       n => nf.format(Math.round(n)));
     renderGames(games);
   }catch(err){
     console.warn('Could not fetch data from Roblox:', err);
@@ -200,9 +194,25 @@ if(document.documentElement.classList.contains('motion')){
   }), {threshold:.12, rootMargin:'0px 0px -8% 0px'});
   document.querySelectorAll('.reveal').forEach(r => {
     let i = 0;
-    [...r.children].forEach(c => (c.classList.contains('grid') ? [...c.children] : [c]).forEach(x => x.style.setProperty('--d', i++)));
+    [...r.children].forEach(c => c.style.setProperty('--d', i++));
     io.observe(r);
   });
+
+  /* scroll progress + hero content drifting up and fading as you scroll past it */
+  const bar = document.getElementById('progress'), hero = document.querySelector('.hero');
+  const layers = [['.hero h1', .35], ['.tags', .25], ['.hero .btn', .18], ['.stats', .1]]
+    .map(([q, k]) => [document.querySelector(q), k]);
+  let ticking = false;
+  function onScroll(){
+    ticking = false;
+    const d = document.documentElement, max = d.scrollHeight - d.clientHeight, y = Math.max(0, scrollY);
+    bar.style.setProperty('--p', max > 0 ? Math.min(1, y / max) : 0);
+    if(y > hero.offsetHeight) return;
+    const fade = Math.max(0, 1 - y / (hero.offsetHeight * .85));
+    layers.forEach(([el, k]) => { el.style.translate = `0 ${y * k}px`; el.style.opacity = fade; });
+  }
+  addEventListener('scroll', () => { if(!ticking){ ticking = true; requestAnimationFrame(onScroll); } }, {passive:true});
+  onScroll();
 }
 </script>
 </body>
