@@ -215,26 +215,33 @@ function renderKpis(){
     document.getElementById('mTitle').textContent=''; document.getElementById('mChart').innerHTML='';
     return;
   }
-  // window ends at the latest day that has data (today's UTC bucket is often not ready yet)
-  const lastT=Math.max(0,...Object.values(an.data).flatMap(a=>a.map(p=>p[0]))), end=lastT? lastT+DAY : an.end;
+  // each metric's window ends at its own latest day: today's UTC bucket is often not ready yet, revenue lags a day
+  // and retention 1/7/30 days, so one shared end left those metrics empty on short periods
+  const lastAll=Math.max(0,...Object.values(an.data).flatMap(a=>a.map(p=>p[0])));
+  const day=t=>new Date(t).toLocaleDateString('en-US',{day:'numeric',month:'short',timeZone:'UTC'});
   const rows=METRICS.map(([id,label,agg,f])=>{
-    let pts=an.data[id]; if(!pts) return {id,label,f,na:true};
+    let pts=an.data[id]; if(!pts?.length) return {id,label,f,na:true};
     if(f==='pct' && Math.max(...pts.map(p=>p[1]),0)<=1) pts=pts.map(p=>[p[0],p[1]*100]);   // fraction -> %
+    const last=Math.max(...pts.map(p=>p[0])), end=last+DAY;
     const [cur,prev]=split(pts,n,end), calc=a=>!a.length?null:agg==='sum'?a.reduce((s,p)=>s+p[1],0):a.reduce((s,p)=>s+p[1],0)/a.length;
     const c=calc(cur), p=calc(prev);
-    return {id,label,f,agg,cur,prev,pts,c,d:(c!=null&&p)?(c-p)/Math.abs(p)*100:null};
+    // compare only with a previous period that has data for as many days, not one reaching back before launch
+    // (a few pre-launch test days with 1 DAU gave changes like +800000%)
+    const d=(c!=null&&p&&prev.length>=cur.length)?(c-p)/Math.abs(p)*100:null;
+    return {id,label,f,agg,cur,prev,pts,end,c,d,lag:last<lastAll?day(last):''};
   });
   window._rows=rows;
   box.innerHTML=rows.map(r=>`<button class="kpi${r.na?' na':''}" data-id="${r.id}" aria-pressed="${r.id===selected}">
     <div class="k">${r.label}${r.agg?` <span class="s">· ${r.agg==='sum'?'sum':'avg'}</span>`:''}</div>
     <div class="v">${r.na?'–':fv(r.f,r.c)}</div>
-    <div class="s">${r.d==null?'&nbsp;':`<span class="${r.d>=0?'up':'down'}">${r.d>=0?'▲':'▼'} ${Math.abs(r.d).toFixed(1)}%</span> vs previous`}</div></button>`).join('');
+    <div class="s">${[r.d!=null?`<span class="${r.d>=0?'up':'down'}">${r.d>=0?'▲':'▼'} ${Math.abs(r.d).toFixed(1)}%</span> vs previous`:n&&!r.na?'no full previous period':'',
+      r.lag&&'until '+r.lag].filter(Boolean).join(' · ')||'&nbsp;'}</div></button>`).join('');
   box.querySelectorAll('.kpi').forEach(b=>b.onclick=()=>{selected=b.dataset.id;renderKpis();});
   const r=rows.find(x=>x.id===selected&&!x.na)||rows.find(x=>!x.na);
-  if(r){ document.getElementById('mTitle').textContent=r.label; const cn=n===1?7:n, cp=r.pts?split(r.pts,cn,end):[r.cur,r.prev];   // 1d: chart shows the last 7 days
+  if(r){ document.getElementById('mTitle').textContent=r.label; const cn=n===1?7:n, cp=split(r.pts,cn,r.end);   // 1d: chart shows the last 7 days
     drawChart(document.getElementById('mChart'),cp[0],cp[1],r.f,cn||1); }
   const errs=Object.keys(an.errors||{});
-  note.textContent=errs.length?'No data for: '+errs.join(', ')+'. First error: '+an.errors[errs[0]]:'Daily data in UTC. Today may still be incomplete.';
+  note.textContent=errs.length?'No data for: '+errs.join(', ')+'. First error: '+an.errors[errs[0]]:'Daily data in UTC. Each metric shows its latest available days (revenue and retention arrive later).';
 }
 
 async function loadCreator(){
