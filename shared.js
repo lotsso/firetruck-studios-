@@ -3,13 +3,14 @@
    ============================================================ */
 const CONFIG = {
   games: ['75987095614345'],   // Roblox game IDs
-  names: { '75987095614345': '+1 Firefighter Evolution' },   // optional display names (Roblox returns the original title)
+  names: { '75987095614345': '+1 Firefighter Evolution', soon: 'Soon' },   // optional display names (Roblox returns the original title)
   idType: 'place',             // 'place' (the ID from the game link) or 'universe'
   apiDomain: 'roproxy.com',    // CORS proxy; put your own proxy here
   refreshMs: 30000,
 
-  // DevEx calculator (devex.html): revenue split per game ID, in percent
-  payouts: { '75987095614345': { lotos: 5, lolcix: 45, partner: 50 } },
+  // DevEx calculator (devex.html): revenue split per game ID, in percent.
+  // Games not on Roblox yet use any other key and get their name from `names`.
+  payouts: { '75987095614345': { lotos: 5, lolcix: 45, partner: 50 }, soon: { lotos: 30, lolcix: 70 } },
   robuxUsd: 0.004,             // USD paid per Robux
   usdPln: 3.9,                 // used only if the live NBP exchange rate can't be fetched
 
