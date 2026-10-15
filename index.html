@@ -92,7 +92,7 @@ footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-to
 /* scroll progress line */
 #progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:20;background:var(--accent);transform-origin:left;transform:scaleX(var(--p,0));pointer-events:none}
 
-@media (max-width:640px){nav ul{gap:16px;font-size:.9rem}.logo span{display:none}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:16px 4px}.gl{grid-template-columns:minmax(0,340px)}.stat .lbl{font-size:.72rem;gap:5px}}
+@media (max-width:640px){nav ul{gap:16px;font-size:.9rem}.logo span,nav .wide{display:none}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:16px 4px}.gl{grid-template-columns:minmax(0,340px)}.stat .lbl{font-size:.72rem;gap:5px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -103,6 +103,7 @@ footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-to
   <a class="logo" href="#"><img src="logo.svg" alt="Pink Petal Studio logo"><span>Pink Petal Studio</span></a>
   <ul>
     <li><a href="#games">Portfolio</a></li>
+    <li><a href="devex.html">DevEx<span class="wide"> calculator</span></a></li>
     <li><a href="#achievements">Achievements</a></li>
   </ul>
 </nav>
