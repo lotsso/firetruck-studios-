@@ -9,7 +9,7 @@ const CONFIG = {
   refreshMs: 30000,
 
   // DevEx calculator (devex.html): revenue split per game ID, in percent
-  payouts: { '75987095614345': { lotos: 5, lolcix: 45, indigo: 50 } },
+  payouts: { '75987095614345': { lotos: 5, lolcix: 45, partner: 50 } },
   robuxUsd: 0.004,             // USD paid per Robux
   usdPln: 3.9,                 // used only if the live NBP exchange rate can't be fetched
 
