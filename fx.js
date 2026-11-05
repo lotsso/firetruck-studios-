@@ -24,23 +24,6 @@
   addEventListener('resize', progress);
   progress();
 
-  /* ---------- nav links: letters shuffle, then settle left to right ---------- */
-  const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=/<>';
-  function scramble(el, dur = 450) {
-    if (!motion || el._scr) return;
-    const text = el.dataset.text || (el.dataset.text = el.textContent);
-    el._scr = true;
-    el.style.minWidth = el.offsetWidth + 'px';
-    const t0 = performance.now();
-    requestAnimationFrame(function step(now) {
-      const p = Math.min(1, (now - t0) / dur), done = Math.floor(p * text.length);
-      el.textContent = [...text].map((c, i) => i < done || c === ' ' ? c : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join('');
-      if (p < 1) requestAnimationFrame(step);
-      else { el.textContent = text; el.style.minWidth = ''; el._scr = false; }
-    });
-  }
-  document.querySelectorAll('.nav ul a').forEach(a => a.addEventListener('pointerenter', () => scramble(a)));
-
   /* ---------- mouse only: tilting cards, magnetic buttons, spotlights, cursor glow ---------- */
   if (fine) {
     let card = null, btn = null;
