@@ -251,18 +251,15 @@ async function loadCreator(){
     note.textContent='To see DAU, playtime, revenue, conversion, ARPPU, play through rate and retention, deploy worker.js and set its address in workerUrl (shared.js).';
     return;
   }
-  if(gid !== CONFIG.games[0]){             // the Worker (UNIVERSE_ID) serves only the first game's analytics and CCU
-    an=null; renderKpis();
-    note.textContent='Creator analytics are set up only for '+(CONFIG.names?.[CONFIG.games[0]]||'the first game')+'.';
-    return;
-  }
   if(an){ renderKpis(); return; }          // data is already loaded: switching periods just re-filters it
-  const base=CONFIG.workerUrl.replace(/\/$/,'');
+  const base=siteApi();
   note.textContent='Loading…';
   try{
-    const [a,c]=await Promise.all([getJSON(`${base}/analytics?days=all`), getJSON(`${base}/ccu?days=90`).catch(()=>null)]);
+    ctx = ctx || await toUniverse(gid);    // analytics and CCU history are per game (universe)
+    const q='universe='+encodeURIComponent(ctx.universeId);
+    const [a,c]=await Promise.all([getJSON(`${base}/analytics?days=all&${q}`), getJSON(`${base}/ccu?days=90&${q}`).catch(()=>null)]);
     an=a; ccuData=c; renderKpis(); renderCcu();
-    setInterval(async()=>{ try{ ccuData=await getJSON(`${base}/ccu?days=90`); renderCcu(); }catch(e){} }, 60000);
+    setInterval(async()=>{ try{ ccuData=await getJSON(`${base}/ccu?days=90&${q}`); renderCcu(); }catch(e){} }, 60000);
   }catch(e){ an=null; renderKpis(); note.textContent='Could not fetch data from the Worker: '+e.message; }
 }
 
@@ -292,15 +289,15 @@ async function load(){
     ctx = ctx || await toUniverse(gid);
     const u = ctx.universeId;
     const [info,votes,icons] = await Promise.all([
-      getJSON(api('games',`/v1/games?universeIds=${u}`)),
-      getJSON(api('games',`/v1/games/votes?universeIds=${u}`)).catch(()=>({data:[]})),
-      getJSON(api('thumbnails',`/v1/games/icons?universeIds=${u}&returnPolicy=PlaceHolder&size=128x128&format=Png&isCircular=false`)).catch(()=>({data:[]}))
+      rbx('games',`/v1/games?universeIds=${u}`),
+      rbx('games',`/v1/games/votes?universeIds=${u}`).catch(()=>({data:[]})),
+      rbx('thumbnails',`/v1/games/icons?universeIds=${u}&returnPolicy=PlaceHolder&size=128x128&format=Png&isCircular=false`).catch(()=>({data:[]}))
     ]);
     const g = info.data[0]; if(!g) throw new Error('No game found for ID '+gid);
     g.name = CONFIG.names?.[gid] || g.name;
-    if(gid === CONFIG.games[0]){ const live = await latestCcu(); if(live != null) g.playing = live; }   // minute-fresh count from the recorder
+    const live = await latestCcu(u); if(live != null) g.playing = live;   // minute-fresh count from the recorder
     const vt = votes.data[0] || {upVotes:0,downVotes:0};
-    let servers=[]; try{ servers=(await getJSON(api('games',`/v1/games/${g.rootPlaceId}/servers/Public?sortOrder=Desc&limit=100`))).data||[]; }catch(e){}
+    let servers=[]; try{ servers=(await rbx('games',`/v1/games/${g.rootPlaceId}/servers/Public?sortOrder=Desc&limit=100`)).data||[]; }catch(e){}
 
     const h = pushSample(u, g.playing);
     const srv = hasCcu(), src = srv ? ccuData.points : h;

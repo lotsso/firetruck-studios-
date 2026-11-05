@@ -124,7 +124,7 @@ footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-to
 <section class="block reveal" id="games">
   <h2>Our games</h2>
   <p class="lead">Click a game to see its full statistics.</p>
-  <div class="gl" id="gameList"><p class="lead">Loading game…</p></div>
+  <div class="gl" id="gameList"><p class="lead">Loading games…</p></div>
 </section>
 
 <section class="block reveal" id="achievements">
@@ -180,7 +180,7 @@ async function loadStats(){
     console.warn('Could not fetch data from Roblox:', err);
     box.classList.remove('live');
     if(!document.querySelector('.gcard')) document.getElementById('gameList').innerHTML =
-      '<p class="lead">Could not load the game. Check the ID in shared.js.</p>';
+      '<p class="lead">Could not load the games. Check the IDs in shared.js.</p>';
   }
 }
 loadStats();

@@ -2,11 +2,12 @@
    CONFIG – shared by index.html and stats.html
    ============================================================ */
 const CONFIG = {
-  // Roblox game IDs. The first one is the game the Worker tracks (creator analytics + per-minute CCU).
+  // Roblox game IDs. Creator analytics and per-minute CCU also need the game's universe ID in
+  // functions/analytics.js, functions/ccu.js and cron-worker.js (the first game is UNIVERSE_ID there).
   games: ['75987095614345', '99106007678581'],
   names: { '75987095614345': '+1 Firefighter Evolution', '99106007678581': 'Destroy a Brick!' },   // optional display names (Roblox returns the original title)
   idType: 'place',             // 'place' (the ID from the game link) or 'universe'
-  apiDomain: 'roproxy.com',    // CORS proxy; put your own proxy here
+  apiDomain: 'roproxy.com',    // fallback CORS proxy, used only when this site's own /rbx proxy (functions/rbx) fails
   refreshMs: 30000,
 
   // DevEx calculator (devex.html): revenue split per game ID, in percent.
@@ -20,8 +21,13 @@ const CONFIG = {
   workerUrl: location.origin
 };
 
-const api = (sub, path) => `https://${sub}.${CONFIG.apiDomain}${path}`;
 const getJSON = async url => { const r = await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); };
+const siteApi = () => CONFIG.workerUrl.replace(/\/$/,'');
+// Public Roblox API (sub = games / thumbnails / apis): this site's own proxy first, roproxy.com if that fails
+async function rbx(sub, path){
+  if(CONFIG.workerUrl){ try{ return await getJSON(`${siteApi()}/rbx/${sub}${path}`); }catch(e){} }
+  return getJSON(`https://${sub}.${CONFIG.apiDomain}${path}`);
+}
 const nf = new Intl.NumberFormat('en-US');
 const esc = t => String(t ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function fmt(n){
@@ -31,11 +37,11 @@ function fmt(n){
   return Math.round(n)+'+';
 }
 // Newest player count recorded every minute by cron-worker.js (via /ccu). Roblox's own `playing` lags by minutes.
-// Only for CONFIG.games[0], the game the recorder tracks; null if unavailable or older than 3 minutes.
-async function latestCcu(){
+// null if the game isn't recorded, or the sample is unavailable or older than 3 minutes.
+async function latestCcu(universeId){
   if(!CONFIG.workerUrl) return null;
   try{
-    const r = await getJSON(CONFIG.workerUrl.replace(/\/$/,'') + '/ccu?latest=1');
+    const r = await getJSON(`${siteApi()}/ccu?latest=1&universe=${encodeURIComponent(universeId)}`);
     return r.v != null && r.now - r.t < 3*6e4 ? r.v : null;
   }catch(e){ return null; }
 }
@@ -47,7 +53,7 @@ async function toUniverse(id){
   if(!u){ try{ u = localStorage.getItem('ppc_uni_'+id); }catch(e){} }
   if(!u){
     try{
-      const r = await getJSON(api('apis', `/universes/v1/places/${id}/universe`));
+      const r = await rbx('apis', `/universes/v1/places/${id}/universe`);
       if(!r.universeId) throw new Error('no universeId');
       u = String(r.universeId);
       try{ localStorage.setItem('ppc_uni_'+id, u); }catch(e){}
@@ -59,17 +65,17 @@ async function toUniverse(id){
 async function fetchGames(){
   const ids = await Promise.all(CONFIG.games.map(toUniverse));
   const list = ids.map(i=>i.universeId).join(',');
-  const [info, icons, live] = await Promise.all([
-    getJSON(api('games', `/v1/games?universeIds=${list}`)),
-    getJSON(api('thumbnails', `/v1/games/icons?universeIds=${list}&returnPolicy=PlaceHolder&size=256x256&format=Png&isCircular=false`)).catch(()=>({data:[]})),
-    latestCcu()
+  const [info, icons, lives] = await Promise.all([
+    rbx('games', `/v1/games?universeIds=${list}`),
+    rbx('thumbnails', `/v1/games/icons?universeIds=${list}&returnPolicy=PlaceHolder&size=256x256&format=Png&isCircular=false`).catch(()=>({data:[]})),
+    Promise.all(ids.map(u => latestCcu(u.universeId)))
   ]);
   // match by universe ID, not by position: Roblox doesn't promise to keep the requested order
   return ids.map((u,i) => {
     const g = info.data.find(x=>String(x.id)===u.universeId);
     return g && {
       ...g, inputId: CONFIG.games[i], name: CONFIG.names?.[CONFIG.games[i]] || g.name,
-      playing: i === 0 && live != null ? live : g.playing,
+      playing: lives[i] ?? g.playing,
       icon: (icons.data.find(x=>x.targetId===g.id)||{}).imageUrl
     };
   }).filter(Boolean);
