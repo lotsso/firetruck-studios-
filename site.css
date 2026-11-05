@@ -1,7 +1,7 @@
 /* ============================================================
    Shared look of all pages: dark, black and white, wide display type.
-   One color only – the pink of the logo – used sparingly (logo, petals, "live" dots).
-   Motion and sound live in fx.js.
+   One color only – the pink of the logo – used sparingly (logo, petals, "live" dots, the home page hero).
+   Motion lives in fx.js.
    ============================================================ */
 :root{
   --bg:#09090a; --panel:#111113; --panel2:#18181b; --line:#232327; --text:#f2f2f3; --mute:#8e8e95; --dim:#55555c;
@@ -27,9 +27,7 @@ a{color:inherit;text-decoration:none}
 .title{font-family:var(--font);font-stretch:112%;font-weight:700;text-transform:uppercase;letter-spacing:.07em;line-height:1.15;font-size:clamp(1.5rem,3.2vw,2.3rem)}
 .lead{color:var(--mute);font-size:.88rem;line-height:1.7;max-width:46ch}
 
-/* heading letters that rise in one by one (fx.js, [data-split]) and a chrome-like glint that later sweeps over them */
-.ch{display:inline-block;animation:ch-in 1s var(--ease) backwards;animation-delay:calc(var(--i) * 45ms + .15s)}
-@keyframes ch-in{from{opacity:0;transform:translateY(.45em) rotate(8deg) scale(.9);filter:blur(10px)}}
+/* a chrome-like glint that sweeps over a heading every few seconds */
 .shine{background:linear-gradient(100deg,var(--text) 0 42%,#8d8d95 47%,#fff 50%,#8d8d95 53%,var(--text) 58% 100%);background-size:280% 100%;background-position:100% 0;
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 7s ease-in-out 1.5s infinite}
 @keyframes shine{0%{background-position:100% 0}32%,100%{background-position:0 0}}
@@ -48,18 +46,6 @@ a{color:inherit;text-decoration:none}
   transform:scaleX(0);transform-origin:right;transition:transform .45s var(--ease)}
 .nav ul a:hover,.nav ul a[aria-current]{color:var(--text)}
 .nav ul a:hover::after,.nav ul a[aria-current]::after{transform:scaleX(1);transform-origin:left}
-
-/* sound switch (added to the nav by fx.js): little equalizer bars that dance while sound is on */
-.snd{display:flex;align-items:center;gap:10px;background:none;border:0;padding:6px 0;cursor:pointer;color:var(--mute);
-  font:inherit;font-size:.6rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;transition:color .2s}
-.snd:hover,.snd[aria-pressed=true]{color:var(--text)}
-.snd .eq{display:flex;align-items:flex-end;gap:2px;height:12px}
-.snd .eq i{width:2px;height:100%;background:currentColor;transform-origin:bottom;transform:scaleY(.25);transition:transform .3s}
-.snd[aria-pressed=true] .eq i{animation:eq 1s ease-in-out infinite alternate}
-.snd[aria-pressed=true] .eq i:nth-child(2){animation-duration:.8s;animation-delay:-.4s}
-.snd[aria-pressed=true] .eq i:nth-child(3){animation-duration:1.15s;animation-delay:-.2s}
-.snd[aria-pressed=true] .eq i:nth-child(4){animation-duration:.9s;animation-delay:-.6s}
-@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
 
 /* scroll progress (fx.js) and the faint light that follows the mouse (fx.js) */
 .progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:30;pointer-events:none;background:rgba(242,242,243,.75);transform-origin:left;transform:scaleX(0)}
@@ -131,7 +117,6 @@ footer{text-align:center;padding:34px 4vw;border-top:1px solid var(--line)}
   .rail{display:none}
   .nav ul{gap:14px}
   .nav ul a{letter-spacing:.16em;font-size:.58rem}
-  .snd .lbl{display:none}
   .gl{grid-template-columns:minmax(0,340px)}
 }
 @media (hover:none){.glow{display:none}}

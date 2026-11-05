@@ -1,98 +1,13 @@
 /* ============================================================
-   fx.js – motion, sound and small interactive touches for every page.
+   fx.js – motion and small interactive touches for every page.
    Pure decoration: the pages work the same if this file fails to load.
-   Honors prefers-reduced-motion (nothing moves) and remembers the sound switch.
+   Honors prefers-reduced-motion (nothing moves).
    Load it right after shared.js, at the end of <body>.
    ============================================================ */
 (() => {
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const rand = (a, b) => a + Math.random() * (b - a);
-  const escText = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const store = {
-    get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
-  };
-
-  /* ---------- SOUND: tiny synthesized blips (Web Audio, no audio files) ----------
-     Browsers allow audio only after the first click / tap / key press, so the page is silent until then. */
-  const sound = (() => {
-    let enabled = store.get('ppc_sound') !== 'off', ctx = null, out = null, lastTick = 0;
-    const unlock = () => {
-      if (ctx) return;
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return;
-      ctx = new AC();
-      out = ctx.createGain();
-      out.gain.value = .55;
-      const soft = ctx.createBiquadFilter();        // low-pass, so nothing sounds shrill
-      soft.type = 'lowpass';
-      soft.frequency.value = 5200;
-      out.connect(soft);
-      soft.connect(ctx.destination);
-    };
-    ['pointerdown', 'keydown'].forEach(t => addEventListener(t, unlock, { capture: true, passive: true }));
-
-    function note(freq, { at = 0, dur = .12, gain = .04, type = 'sine', bend = 1 } = {}) {
-      if (!enabled || !ctx) return;
-      if (ctx.state === 'suspended') ctx.resume();
-      const t = ctx.currentTime + at, o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq, t);
-      if (bend !== 1) o.frequency.exponentialRampToValueAtTime(freq * bend, t + dur);
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(gain, t + .006);
-      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-      o.connect(g);
-      g.connect(out);
-      o.start(t);
-      o.stop(t + dur + .03);
-    }
-    const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98];   // C major pentatonic
-    return {
-      get enabled() { return enabled; },
-      set enabled(v) { enabled = v; store.set('ppc_sound', v ? 'on' : 'off'); },
-      tick() {                                       // hover
-        const n = performance.now();
-        if (n - lastTick < 45) return;
-        lastTick = n;
-        note(rand(1800, 2300), { dur: .04, gain: .018, type: 'triangle' });
-      },
-      click() { note(620, { dur: .16, gain: .05, type: 'triangle', bend: 1.6 }); note(1240, { at: .025, dur: .12, gain: .018 }); },
-      chime() { for (let i = 0; i < 3; i++) note(PENTA[Math.floor(Math.random() * PENTA.length)], { at: i * .065, dur: .6, gain: .03 }); },
-      on() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note(f, { at: i * .06, dur: .35, gain: .035 })); },
-      off() { note(523.25, { dur: .2, gain: .03, bend: .6 }); }
-    };
-  })();
-
-  // sound switch at the end of the nav
-  const navList = document.querySelector('.nav ul');
-  if (navList) {
-    const li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'snd';
-    b.title = 'Sound on / off';
-    b.innerHTML = '<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="lbl">Sound</span>';
-    const sync = () => b.setAttribute('aria-pressed', String(sound.enabled));
-    b.addEventListener('click', () => {
-      if (sound.enabled) { sound.off(); sound.enabled = false; } else { sound.enabled = true; sound.on(); }
-      sync();
-    });
-    sync();
-    li.appendChild(b);
-    navList.appendChild(li);
-  }
-
-  // a soft tick when the mouse goes over something clickable, a click when it's pressed
-  document.addEventListener('pointerover', e => {
-    if (e.pointerType !== 'mouse' || !(e.target instanceof Element)) return;
-    const t = e.target.closest('a, button');
-    if (t && !(e.relatedTarget instanceof Node && t.contains(e.relatedTarget))) sound.tick();
-  });
-  document.addEventListener('click', e => {
-    const t = e.target instanceof Element && e.target.closest('a, button');
-    if (t && !t.classList.contains('snd')) sound.click();
-  });
 
   /* ---------- scroll progress bar ---------- */
   const bar = document.createElement('div');
@@ -109,7 +24,7 @@
   addEventListener('resize', progress);
   progress();
 
-  /* ---------- text scramble: letters shuffle, then settle left to right ---------- */
+  /* ---------- nav links: letters shuffle, then settle left to right ---------- */
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=/<>';
   function scramble(el, dur = 450) {
     if (!motion || el._scr) return;
@@ -125,21 +40,6 @@
     });
   }
   document.querySelectorAll('.nav ul a').forEach(a => a.addEventListener('pointerenter', () => scramble(a)));
-  document.querySelectorAll('[data-scramble]').forEach((el, i) => setTimeout(() => scramble(el, 800), 900 + i * 220));
-
-  /* ---------- [data-split]: letters rise in one by one, then a light sweeps over the word (.shine) ---------- */
-  if (motion) document.querySelectorAll('[data-split]').forEach(el => {
-    const text = el.textContent.trim();
-    if (!text) return;
-    el.setAttribute('aria-label', text);
-    el.innerHTML = [...text].map((c, i) => c === ' ' ? ' ' : `<span class="ch" aria-hidden="true" style="--i:${i}">${escText(c)}</span>`).join('');
-    const chars = el.querySelectorAll('.ch');
-    chars[chars.length - 1].addEventListener('animationend', () => {
-      el.textContent = text;                         // back to plain text (font-kerning:none keeps it pixel-identical)
-      el.removeAttribute('aria-label');
-      el.classList.add('shine');
-    }, { once: true });
-  });
 
   /* ---------- mouse only: tilting cards, magnetic buttons, spotlights, cursor glow ---------- */
   if (fine) {
@@ -176,7 +76,7 @@
     }, { passive: true });
     document.documentElement.addEventListener('pointerleave', () => { resetCard(); resetBtn(); });
 
-    if (motion) {                                     // soft pink light trailing the cursor
+    if (motion) {                                     // faint light trailing the cursor
       const g = document.createElement('div');
       g.className = 'glow';
       g.setAttribute('aria-hidden', 'true');
@@ -273,46 +173,9 @@
         const ang = rand(0, Math.PI * 2), sp = rand(1.5, 5.5);
         burst.push({ ...make(false), x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 2, vr: rand(-.12, .12), s: rand(6, 12), a: rand(.6, 1), life: 1 });
       }
-      sound.chime();
       start();
     });
     start();
   }
   if (motion) document.querySelectorAll('canvas.petals').forEach(petals);
-
-  /* ---------- marquee: endless strip of words; scrolling speeds it up, scrolling up runs it backwards ---------- */
-  const strips = new Set();
-  function marquee(track, items) {
-    if (!track || !items.length) return;
-    if (track._anim) { track._anim.cancel(); strips.delete(track._anim); }
-    let words = items.length % 2 ? [...items, ...items] : [...items];   // even count keeps outline / gradient alternating at the seam
-    const group = list => `<div class="grp">${list.map(w => `<span>${escText(w)}</span><i>✦</i>`).join('')}</div>`;
-    track.innerHTML = group(words);
-    while (track.firstElementChild.offsetWidth < innerWidth && words.length < 48) {   // one group must be wider than the screen
-      words = [...words, ...words];
-      track.innerHTML = group(words);
-    }
-    if (!motion) return;
-    track.insertAdjacentHTML('beforeend', group(words));
-    const w = track.firstElementChild.offsetWidth;
-    track._anim = track.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-w}px)` }], { duration: w / 55 * 1000, iterations: Infinity });
-    strips.add(track._anim);
-  }
-  let lastY = scrollY, vel = 0, rate = 1, vRaf = 0;
-  const speed = () => {
-    vRaf = 0;
-    const target = 1 + Math.max(-6, Math.min(6, vel * .08));
-    vel *= .85;
-    rate += (target - rate) * .15;
-    strips.forEach(a => { a.playbackRate = rate; });
-    if (Math.abs(rate - 1) > .01 || Math.abs(vel) > .5) vRaf = requestAnimationFrame(speed);
-    else { rate = 1; strips.forEach(a => { a.playbackRate = 1; }); }
-  };
-  addEventListener('scroll', () => {
-    vel += scrollY - lastY;
-    lastY = scrollY;
-    if (motion && strips.size && !vRaf) vRaf = requestAnimationFrame(speed);
-  }, { passive: true });
-
-  window.PPFX = { sound, scramble, marquee };
 })();
