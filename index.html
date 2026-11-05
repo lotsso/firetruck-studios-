@@ -20,7 +20,7 @@
 .petals{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
 .hero h1{font-weight:800;font-size:clamp(2.8rem,9vw,6.5rem);line-height:1;letter-spacing:-.05em}
 .hero h1 span{display:block;color:var(--accent)}
-.tags{margin:30px 0 40px;font-size:clamp(1rem,2vw,1.25rem);color:var(--hmute);display:flex;gap:10px 28px;justify-content:center;flex-wrap:wrap}
+.tags{margin:30px 0 40px;font-size:clamp(1rem,2vw,1.25rem);color:var(--hmute)}
 .cta{display:inline-block;padding:14px 30px;font-weight:600;background:var(--accent);color:#14060d;transition:background-color .2s,transform .2s var(--ease)}
 .cta:hover{background:#ff8bb9;transform:translateY(-2px)}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,220px));justify-content:center;gap:16px;margin-top:70px}
@@ -28,14 +28,13 @@
 .stat .num{font-weight:800;font-size:clamp(1.4rem,16cqi,2.6rem);line-height:1.1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stat .lbl{margin-top:8px;font-size:.9rem;color:var(--hmute);display:inline-flex;align-items:center;gap:8px}
 .stat .lbl::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--hdim)}
-.stats.live .lbl::after{background:var(--accent);animation:pingp 2s infinite}
+.stats.live .lbl::after{background:var(--live);animation:pingg 2s infinite}
 
 /* SHOWCASE: three screenshots with the big title over their bottom edge */
 .showcase{padding:150px 4vw 110px;text-align:center}
 .collage{display:flex;justify-content:center;align-items:flex-end;gap:clamp(12px,3vw,30px);width:min(560px,86vw);margin:0 auto}
-.collage figure{margin:0;overflow:hidden;background:var(--panel);transition:box-shadow .5s}
-.collage figure:nth-child(odd){flex:0 0 28%;aspect-ratio:.88}
-.collage figure:nth-child(2){flex:0 0 32%;aspect-ratio:.78}
+.collage figure{margin:0;overflow:hidden;background:var(--panel);transition:box-shadow .5s;flex:0 1 34%;aspect-ratio:1}
+.collage figure:nth-child(even){margin-bottom:10%}
 .collage figure:hover{box-shadow:0 0 0 1px rgba(255,255,255,.35),0 24px 60px -24px rgba(0,0,0,.9)}
 .collage img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1s var(--ease)}
 .collage figure:hover img{transform:scale(1.06)}
@@ -89,7 +88,7 @@ footer{padding-top:0}
 <header class="hero" id="top">
   <canvas class="petals" aria-hidden="true"></canvas>
   <h1>Pink Petal <span>Studio</span></h1>
-  <p class="tags"><span>Game development</span><span>Metaverse</span><span>Digital experiences</span></p>
+  <p class="tags">Game Development + Upscaling</p>
   <a class="cta" href="#games">Explore projects</a>
 
   <!-- STATS: values are filled in by the API (see CONFIG in shared.js) -->
@@ -101,7 +100,7 @@ footer{padding-top:0}
 </header>
 
 <section class="showcase reveal" id="games">
-  <div class="collage" id="collage" aria-hidden="true"><figure></figure><figure></figure><figure></figure></div>
+  <div class="collage" id="collage" aria-hidden="true"></div>
   <h2 class="wide big">Our games</h2>
   <p class="caps sub">Game development · Metaverse · Digital experiences</p>
   <a class="btn" href="#list">View projects</a>
@@ -169,18 +168,17 @@ function renderExtras(games){
   const day = d => new Date(d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
   document.getElementById('facts').innerHTML = games.map(g => `<div><b>${esc(g.name)}</b><span>Created ${day(g.created)} · ${fmt(g.visits)} visits</span></div>`).join('');
 }
-// once: three screenshots for the showcase, taken in turn from each game (icons as a fallback)
+// showcase: one icon per game (up to 4); empty frames now so the layout doesn't jump when they load
+document.getElementById('collage').innerHTML = CONFIG.games.slice(0, 4).map(() => '<figure></figure>').join('');
 let collageDone = false;
-async function renderCollage(games){
+function renderCollage(games){
   if(collageDone) return;
-  let shots = [];
-  try{ shots = await fetchShots(games.map(g => g.id)); }catch(e){ console.warn('Could not fetch screenshots:', e); }
-  const pics = [];
-  for(let i = 0; i < 3 && pics.length < 3; i++) shots.forEach(s => { if(s[i] && pics.length < 3) pics.push(s[i]); });
-  games.forEach(g => { if(g.icon && pics.length < 3) pics.push(g.icon); });
-  if(!pics.length) return;                    // try again on the next refresh
+  const icons = games.map(g => g.icon).filter(Boolean);
+  if(!icons.length) return;                   // try again on the next refresh
   collageDone = true;
-  document.querySelectorAll('#collage figure').forEach((f, i) => { if(pics[i]) f.innerHTML = `<img src="${esc(pics[i])}" alt="" loading="lazy">`; });
+  document.querySelectorAll('#collage figure').forEach((f, i) => {
+    if(icons[i]) f.innerHTML = `<img src="${esc(icons[i])}" alt="" loading="lazy">`; else f.remove();
+  });
 }
 async function loadStats(){
   const box = document.getElementById('stats');
@@ -231,7 +229,7 @@ if(document.documentElement.classList.contains('motion')){
   /* hero content drifts up and fades as you scroll past it; the three screenshots move at different speeds */
   const hero = document.querySelector('.hero'), showcase = document.getElementById('games');
   const layers = [['.hero h1', .35], ['.tags', .25], ['.hero .cta', .18], ['.stats', .1]].map(([q, k]) => [document.querySelector(q), k]);
-  const figs = [...document.querySelectorAll('#collage figure')], drift = [50, -35, 70];
+  const figs = [...document.querySelectorAll('#collage figure')], drift = [50, -35, 70, -20];
   let ticking = false;
   function onScroll(){
     ticking = false;

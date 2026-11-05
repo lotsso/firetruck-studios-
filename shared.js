@@ -73,7 +73,7 @@ async function fetchGames(){
   const list = ids.map(i=>i.universeId).join(',');
   const [info, icons, lives] = await Promise.all([
     rbx('games', `/v1/games?universeIds=${list}`),
-    rbx('thumbnails', `/v1/games/icons?universeIds=${list}&returnPolicy=PlaceHolder&size=256x256&format=Png&isCircular=false`).catch(()=>({data:[]})),
+    rbx('thumbnails', `/v1/games/icons?universeIds=${list}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`).catch(()=>({data:[]})),
     Promise.all(ids.map(u => latestCcu(u.universeId)))
   ]);
   // match by universe ID, not by position: Roblox doesn't promise to keep the requested order
