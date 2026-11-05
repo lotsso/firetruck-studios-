@@ -25,10 +25,11 @@ main{padding:140px 6vw 110px;max-width:1180px;margin:auto}
 .game img:not([src]){visibility:hidden}
 .game h1{font-size:clamp(1.5rem,4.2vw,2.8rem);line-height:1.05}
 .split-line{margin:6px 0 40px}
-.calc{padding:30px 32px;margin-bottom:18px}
+.calc{padding:30px 32px;margin-bottom:18px;border-color:transparent;
+  background:linear-gradient(var(--panel),var(--panel)) padding-box,linear-gradient(140deg,rgba(255,111,168,.55),rgba(167,139,250,.3) 40%,var(--line) 75%) border-box}
 label{display:block;margin-bottom:10px}
 .inp{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);transition:border-color .2s}
-.inp:focus-within{border-color:var(--text)}
+.inp:focus-within{border-color:var(--pink)}
 .inp input{flex:1;min-width:0;font:inherit;font-stretch:125%;font-weight:800;font-size:clamp(2rem,7vw,3.4rem);letter-spacing:-.01em;
   font-variant-numeric:tabular-nums;color:var(--text);background:none;border:0;outline:0;padding:6px 0}
 .inp input::placeholder{color:#2e2e33}
@@ -39,9 +40,9 @@ label{display:block;margin-bottom:10px}
 .person{padding:24px 26px}
 .who{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .who b{font-stretch:118%;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:.04em}
-.who span{font-size:.7rem;font-weight:600;letter-spacing:.2em;color:var(--mute)}
+.who span{font-size:.7rem;font-weight:600;letter-spacing:.2em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .bar{height:2px;background:var(--line);margin:14px 0 18px}
-.bar i{display:block;height:100%;background:var(--text);transition:width .5s var(--ease)}
+.bar i{display:block;height:100%;background:var(--grad);transition:width .5s var(--ease)}
 .rbx{font-stretch:118%;font-weight:800;font-size:1.8rem;line-height:1.2;letter-spacing:-.01em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .pln{margin-top:4px;color:var(--mute);font-size:.82rem;font-variant-numeric:tabular-nums}
 .pln b{color:var(--text);font-weight:600;font-size:1rem}
@@ -53,7 +54,7 @@ label{display:block;margin-bottom:10px}
 </head>
 <body>
 <nav class="nav" id="nav">
-  <a class="mark" href="index.html"><img src="logo-mono.svg" alt="Pink Petal Studio"></a>
+  <a class="mark" href="index.html"><img src="logo.svg" alt="Pink Petal Studio"></a>
   <ul>
     <li><a href="index.html#games">Projects</a></li>
     <li><a href="devex.html" aria-current="page">DevEx</a></li>
@@ -64,6 +65,7 @@ label{display:block;margin-bottom:10px}
 <main id="app"></main>
 
 <script src="shared.js"></script>
+<script src="fx.js"></script>
 <script>
 const gid = new URLSearchParams(location.search).get('id');
 const app = document.getElementById('app');
@@ -80,7 +82,7 @@ function parseRobux(s){
 }
 
 function renderPicker(){
-  app.innerHTML = `<div class="head"><h1 class="wide">DevEx calculator</h1>
+  app.innerHTML = `<div class="head"><h1 class="wide shine">DevEx calculator</h1>
     <span class="caps">Pick a game · see its revenue split and each person's cash out</span></div>
     <div class="gl">${[...new Set([...CONFIG.games, ...Object.keys(CONFIG.payouts || {})])].map(id => {
       const g = games.find(x => x.inputId === id), split = splitOf(id);
@@ -94,7 +96,7 @@ function renderPicker(){
 function renderCalc(){
   const split = splitOf(gid), sum = split.reduce((a,[,p]) => a+p, 0);
   app.innerHTML = `<a class="back caps" href="devex.html">← All games</a>
-    <div class="game"><img id="icon" alt=""${onRoblox(gid) ? '' : ' src="logo-mono.svg"'}><h1 class="wide" id="gname">${esc(nameOf(gid))}</h1></div>
+    <div class="game"><img id="icon" alt=""${onRoblox(gid) ? '' : ' src="logo-mono.svg"'}><h1 class="wide shine" id="gname">${esc(nameOf(gid))}</h1></div>
     <p class="caps split-line">Revenue split · ${split.length ? split.map(([who,p]) => `${esc(who)} ${p}%`).join(' · ') : 'none'}</p>
     ${!split.length ? `<p class="warn">No revenue split set for this game. Add it to CONFIG.payouts in shared.js.</p>` : `
     <div class="panel calc">

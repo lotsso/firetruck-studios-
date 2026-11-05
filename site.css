@@ -1,76 +1,148 @@
 /* ============================================================
-   Shared look of all pages: black, monochrome, wide display type
+   Shared look of all pages: near-black base, wide display type and
+   pink → violet gradient accents (the petal colors of the logo).
+   Motion and sound live in fx.js.
    ============================================================ */
 :root{
   --bg:#0a0a0b; --panel:#111113; --panel2:#18181b; --line:#232327; --text:#f2f2f3; --mute:#8e8e95; --dim:#55555c;
+  --pink:#ff6fa8; --violet:#a78bfa; --indigo:#7c6cff; --peach:#ffb38a;
+  --grad:linear-gradient(90deg,var(--pink),var(--violet));
+  --grad-warm:linear-gradient(90deg,var(--peach),var(--pink) 45%,var(--violet));
+  --grad-deep:linear-gradient(90deg,#d63f7e,#7357e8);    /* darker, for white text on top */
   --font:'Archivo',system-ui,sans-serif;
   --ease:cubic-bezier(.2,.8,.2,1);
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0}
-html{background:var(--bg)}
+/* soft pink / violet light in the corners instead of flat black */
+html{background:
+  radial-gradient(900px 560px at 6% -4%,rgba(255,111,168,.08),transparent 65%),
+  radial-gradient(820px 620px at 104% 16%,rgba(124,108,255,.07),transparent 65%),
+  var(--bg)}
 html.motion{scroll-behavior:smooth}
-body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
-::selection{background:var(--text);color:var(--bg)}
+body{font-family:var(--font);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+/* film grain over everything */
+body::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+::selection{background:var(--pink);color:#0a0a0b}
 a{color:inherit;text-decoration:none}
-:focus-visible{outline:1px solid var(--text);outline-offset:4px}
+:focus-visible{outline:1px solid var(--pink);outline-offset:4px}
 
 /* type */
 .wide{font-family:var(--font);font-stretch:125%;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;line-height:.95}
 .caps{font-size:.66rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--mute)}
 .title{font-family:var(--font);font-stretch:112%;font-weight:700;text-transform:uppercase;letter-spacing:.07em;line-height:1.15;font-size:clamp(1.5rem,3.2vw,2.3rem)}
 .lead{color:var(--mute);font-size:.88rem;line-height:1.7;max-width:46ch}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* heading letters that rise in one by one (fx.js, [data-split]) and the light that later sweeps over them */
+.ch{display:inline-block;animation:ch-in 1s var(--ease) backwards;animation-delay:calc(var(--i) * 45ms + .15s)}
+@keyframes ch-in{from{opacity:0;transform:translateY(.45em) rotate(8deg) scale(.9);filter:blur(10px)}}
+.shine{background:linear-gradient(100deg,var(--text) 0 40%,#ffc2dc 46%,#d6c8ff 52%,var(--text) 58% 100%);background-size:280% 100%;background-position:100% 0;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 7s ease-in-out 1.5s infinite}
+@keyframes shine{0%{background-position:100% 0}32%,100%{background-position:0 0}}
 
 /* nav */
 .nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;
   padding:24px 4vw;transition:background-color .3s,padding .3s}
-.nav.solid{background:rgba(10,10,11,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding-block:16px}
+.nav.solid{background:rgba(10,10,11,.78);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding-block:16px}
+.nav.solid::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,111,168,.35),rgba(167,139,250,.35),transparent)}
 .nav .mark{display:flex;align-items:center}
-.nav .mark img{width:32px;height:32px;display:block}
-.nav ul{display:flex;gap:clamp(18px,3vw,36px);list-style:none;padding:0}
-.nav ul a{font-size:.64rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);transition:color .2s}
+.nav .mark img{width:32px;height:32px;display:block;transition:transform .9s cubic-bezier(.3,1.5,.4,1)}
+.nav .mark:hover img{transform:rotate(90deg) scale(1.08)}
+.nav ul{display:flex;align-items:center;gap:clamp(18px,3vw,36px);list-style:none;padding:0}
+.nav ul a{position:relative;display:inline-block;font-size:.64rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);transition:color .2s}
+.nav ul a::after{content:"";position:absolute;left:0;right:.28em;bottom:-6px;height:1px;background:var(--grad);
+  transform:scaleX(0);transform-origin:right;transition:transform .45s var(--ease)}
 .nav ul a:hover,.nav ul a[aria-current]{color:var(--text)}
+.nav ul a:hover::after,.nav ul a[aria-current]::after{transform:scaleX(1);transform-origin:left}
 
-/* side rails: games on the left, "scroll" on the right */
+/* sound switch (added to the nav by fx.js): little equalizer bars that dance while sound is on */
+.snd{display:flex;align-items:center;gap:10px;background:none;border:0;padding:6px 0;cursor:pointer;color:var(--mute);
+  font:inherit;font-size:.6rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;transition:color .2s}
+.snd:hover,.snd[aria-pressed=true]{color:var(--text)}
+.snd .eq{display:flex;align-items:flex-end;gap:2px;height:12px}
+.snd .eq i{width:2px;height:100%;background:linear-gradient(0deg,var(--pink),var(--violet));transform-origin:bottom;transform:scaleY(.25);transition:transform .3s}
+.snd[aria-pressed=true] .eq i{animation:eq 1s ease-in-out infinite alternate}
+.snd[aria-pressed=true] .eq i:nth-child(2){animation-duration:.8s;animation-delay:-.4s}
+.snd[aria-pressed=true] .eq i:nth-child(3){animation-duration:1.15s;animation-delay:-.2s}
+.snd[aria-pressed=true] .eq i:nth-child(4){animation-duration:.9s;animation-delay:-.6s}
+@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+
+/* scroll progress (fx.js) and the soft light that follows the mouse (fx.js) */
+.progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:30;pointer-events:none;background:var(--grad-warm);transform-origin:left;transform:scaleX(0)}
+.glow{position:fixed;left:-320px;top:-320px;width:640px;height:640px;z-index:-1;pointer-events:none;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,111,168,.10),rgba(124,108,255,.06) 38%,transparent 66%);opacity:0;transition:opacity .6s}
+.glow.on{opacity:1}
+
+/* "scroll" cue on the right */
 .rail{position:fixed;bottom:30px;z-index:15;display:flex;flex-direction:column;align-items:center;gap:14px;transition:opacity .3s}
-.rail.left{left:4vw}
 .rail.right{right:4vw}
-.rail.left a{display:block;width:16px;height:16px;opacity:.85;transition:opacity .2s}
-.rail.left a:hover{opacity:1}
-.rail.left img{width:100%;height:100%;object-fit:cover}
 .scroll{writing-mode:vertical-rl;font-size:.56rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:var(--mute);
   display:flex;align-items:center;gap:14px}
-.scroll::after{content:"";width:1px;height:48px;background:currentColor}
+.scroll::after{content:"";width:1px;height:48px;
+  background:linear-gradient(var(--pink),var(--violet)) 0 -48px/1px 48px no-repeat,rgba(142,142,149,.45);animation:cue 2.4s var(--ease) infinite}
+@keyframes cue{to{background-position:0 48px}}
 .scroll:hover{color:var(--text)}
 .rail.gone{opacity:0;pointer-events:none}
 
-/* buttons, panels */
-.btn{display:inline-block;padding:14px 48px;background:var(--panel2);border:1px solid var(--line);color:#c9c9cf;
-  font-size:.62rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;transition:background-color .25s,color .25s,border-color .25s}
-.btn:hover{background:var(--text);color:var(--bg);border-color:var(--text)}
+/* buttons (fx.js also pulls them a little toward the cursor), panels */
+.btn{position:relative;isolation:isolate;overflow:hidden;display:inline-block;padding:14px 48px;background:var(--panel2);border:1px solid var(--line);color:#c9c9cf;
+  font-size:.62rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;
+  transition:color .3s,border-color .3s,box-shadow .4s,translate .5s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--grad-deep);transform:scaleX(0);transform-origin:right;transition:transform .55s var(--ease)}
+.btn:hover{color:#fff;border-color:transparent;box-shadow:0 14px 34px -14px rgba(255,111,168,.6)}
+.btn:hover::before{transform:scaleX(1);transform-origin:left}
 .panel{background:var(--panel);border:1px solid var(--line)}
 
-/* game cards */
+/* game cards: tilt toward the cursor and a gradient rim + light under it (fx.js sets --mx / --my) */
 .gl{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,290px));justify-content:center;gap:20px}
-.gcard{position:relative;display:block;background:var(--panel);border:1px solid var(--line);transition:border-color .3s}
-.gcard:hover{border-color:#3d3d44}
+.gcard{--mx:50%;--my:50%;position:relative;display:block;background:var(--panel);border:1px solid var(--line);
+  transition:border-color .3s,box-shadow .4s,transform .6s var(--ease)}
+.gcard:hover{border-color:transparent;box-shadow:0 30px 60px -30px rgba(255,111,168,.45);transition:border-color .3s,box-shadow .4s,transform .15s ease-out}
+.gcard::before{content:"";position:absolute;inset:-1px;z-index:2;padding:1px;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:radial-gradient(240px circle at var(--mx) var(--my),var(--pink),var(--violet) 45%,rgba(255,255,255,.08) 75%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.gcard:hover::before{opacity:1}
 .gcard .img{position:relative;aspect-ratio:1;overflow:hidden;background:var(--panel2)}
+.gcard .img::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:radial-gradient(360px circle at var(--mx) var(--my),rgba(255,255,255,.18),transparent 45%)}
+.gcard:hover .img::after{opacity:1}
 .gcard .img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease)}
-.gcard:hover .img img{transform:scale(1.04)}
+.gcard:hover .img img{transform:scale(1.05)}
 .gcard .info{padding:18px 18px 20px}
 .gcard h3{font-stretch:118%;font-weight:700;font-size:.98rem;text-transform:uppercase;letter-spacing:.01em;line-height:1.25}
 .gcard .meta{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
 .gcard .meta b{color:var(--text);font-weight:600;letter-spacing:.06em}
 .ph{position:absolute;inset:0;display:grid;place-items:center}
 .ph img{position:static!important;width:30%!important;height:auto!important;opacity:.25;filter:none!important;transform:none!important}
-.gcard .live{width:6px;height:6px;border-radius:50%;background:var(--text);display:inline-block;margin-right:7px;vertical-align:middle;animation:ping 2s infinite}
+.gcard .live{width:6px;height:6px;border-radius:50%;background:var(--pink);display:inline-block;margin-right:7px;vertical-align:middle;animation:pingp 2s infinite}
 @keyframes ping{0%{box-shadow:0 0 0 0 rgba(242,242,243,.45)}70%,100%{box-shadow:0 0 0 7px rgba(242,242,243,0)}}
+@keyframes pingp{0%{box-shadow:0 0 0 0 rgba(255,111,168,.6)}70%,100%{box-shadow:0 0 0 7px rgba(255,111,168,0)}}
 
-footer{text-align:center;padding:34px 4vw;border-top:1px solid var(--line)}
+footer{text-align:center;padding:34px 4vw;border-top:1px solid;
+  border-image:linear-gradient(90deg,transparent,rgba(255,111,168,.4),rgba(167,139,250,.4),transparent) 1}
+
+/* page-to-page crossfade (browsers that support cross-document view transitions) */
+@media (prefers-reduced-motion:no-preference){
+  @view-transition{navigation:auto}
+  ::view-transition-old(root){animation:vt-out .3s ease both}
+  ::view-transition-new(root){animation:vt-in .5s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes vt-out{to{opacity:0;transform:scale(.985)}}
+  @keyframes vt-in{from{opacity:0;transform:translateY(14px)}}
+  .nav{view-transition-name:nav}
+  .nav .mark img{animation:bloom 1.2s cubic-bezier(.3,1.4,.4,1) .1s backwards}
+  @keyframes bloom{from{opacity:0;transform:rotate(-140deg) scale(.3)}}
+}
 
 @media (max-width:640px){
   .rail{display:none}
-  .nav ul a{letter-spacing:.2em}
+  .nav ul{gap:14px}
+  .nav ul a{letter-spacing:.16em;font-size:.58rem}
+  .snd .lbl{display:none}
   .gl{grid-template-columns:minmax(0,340px)}
 }
+@media (hover:none){.glow{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

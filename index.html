@@ -13,71 +13,103 @@
 <link rel="stylesheet" href="site.css">
 <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');</script>
 <style>
-/* HERO */
-.hero{min-height:100vh;min-height:100svh;display:grid;place-items:center;position:relative;padding:120px 4vw 150px;overflow:hidden}
+/* HERO: drifting pink / violet light, falling petals (fx.js), the big wide name */
+.hero{min-height:100vh;min-height:100svh;display:grid;place-items:center;position:relative;isolation:isolate;padding:120px 4vw 150px;overflow:hidden}
+.aurora{position:absolute;inset:0;z-index:-3;pointer-events:none}
+.aurora i{position:absolute;width:72vmax;height:72vmax;border-radius:50%}
+.aurora i:nth-child(1){left:-28vmax;top:-38vmax;background:radial-gradient(closest-side,rgba(255,111,168,.32),transparent);animation:a1 24s ease-in-out infinite alternate}
+.aurora i:nth-child(2){right:-32vmax;top:-14vmax;background:radial-gradient(closest-side,rgba(124,108,255,.26),transparent);animation:a2 29s ease-in-out infinite alternate}
+.aurora i:nth-child(3){left:12%;bottom:-52vmax;background:radial-gradient(closest-side,rgba(255,179,138,.16),transparent);animation:a3 34s ease-in-out infinite alternate}
+@keyframes a1{to{transform:translate(20vmax,16vmax) scale(1.15)}}
+@keyframes a2{to{transform:translate(-18vmax,20vmax) scale(.88)}}
+@keyframes a3{to{transform:translate(12vmax,-16vmax) scale(1.2)}}
+.petals{position:absolute;inset:0;width:100%;height:100%;z-index:-2;pointer-events:none}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:200px;z-index:-1;pointer-events:none;background:linear-gradient(transparent,var(--bg))}
 .name{position:relative;text-align:center}
-.name h1{font-size:clamp(2.1rem,8.6vw,9.5rem);white-space:nowrap}
+.name h1{font-size:clamp(2.1rem,8.6vw,9.5rem);white-space:nowrap;font-kerning:none}
 .name .pre{position:absolute;left:14%;bottom:100%;margin-bottom:1.6em}
-.name .post{position:absolute;right:12%;top:100%;margin-top:1.8em}
+.name .post{position:absolute;right:12%;top:100%;margin-top:1.8em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .stats{position:absolute;left:0;right:0;bottom:48px;display:flex;justify-content:center;gap:clamp(28px,6vw,72px)}
 .stat{text-align:center}
 .stat .num{font-stretch:118%;font-weight:700;font-size:clamp(1.05rem,2vw,1.4rem);letter-spacing:.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stat .lbl{margin-top:4px;display:inline-flex;align-items:center;gap:8px;font-size:.56rem}
 .stat .lbl::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--dim)}
-.stats.live .lbl::before{background:var(--text);animation:ping 2s infinite}
+.stats.live .lbl::before{background:var(--pink);animation:pingp 2s infinite}
 
-/* SHOWCASE: three photos with the big title over their bottom edge */
-.showcase{padding:150px 4vw 110px;text-align:center;border-top:1px solid var(--line)}
+/* MARQUEE: endless strip of words, sped up or reversed by scrolling (fx.js) */
+.marquee{overflow:hidden;padding:26px 0;border-block:1px solid var(--line);background:linear-gradient(90deg,rgba(255,111,168,.06),rgba(124,108,255,.06))}
+.track{display:flex;width:max-content}
+.grp{display:flex;align-items:center;gap:40px;padding-right:40px}
+.grp span{font-stretch:125%;font-weight:800;font-size:clamp(1.3rem,3vw,2.3rem);line-height:1;text-transform:uppercase;white-space:nowrap}
+.grp span:nth-child(4n+1){color:transparent;-webkit-text-stroke:1px rgba(242,242,243,.4)}
+.grp span:nth-child(4n+3){background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grp i{font-style:normal;font-size:1rem;color:var(--pink)}
+
+/* SHOWCASE: three screenshots with the big title over their bottom edge */
+.showcase{padding:150px 4vw 110px;text-align:center;background:radial-gradient(55% 45% at 50% 32%,rgba(124,108,255,.11),transparent 70%)}
 .collage{display:flex;justify-content:center;align-items:flex-end;gap:clamp(12px,3vw,30px);width:min(560px,86vw);margin:0 auto}
-.collage figure{margin:0;overflow:hidden;background:var(--panel)}
+.collage figure{margin:0;overflow:hidden;background:var(--panel);transition:box-shadow .5s}
 .collage figure:nth-child(odd){flex:0 0 28%;aspect-ratio:.88}
 .collage figure:nth-child(2){flex:0 0 32%;aspect-ratio:.78}
+.collage figure:hover{box-shadow:0 0 0 1px rgba(255,111,168,.6),0 24px 60px -18px rgba(167,139,250,.55)}
 .collage img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1s var(--ease)}
-.collage figure:hover img{transform:scale(1.05)}
-.big{font-stretch:100%;font-weight:700;font-size:clamp(2.1rem,5.6vw,4.4rem);letter-spacing:.005em;margin-top:-.5em;position:relative;z-index:1;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+.collage figure:hover img{transform:scale(1.06)}
+.big{font-stretch:100%;font-weight:700;font-size:clamp(2.1rem,5.6vw,4.4rem);letter-spacing:.005em;margin-top:-.5em;position:relative;z-index:1;
+  background:linear-gradient(180deg,#fff 30%,#ffd0e4 70%,#ddd3ff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 6px 22px rgba(0,0,0,.75))}
 .sub{margin:16px 0 34px;font-size:.56rem}
 
 /* GAME LIST */
 .games{padding:20px 4vw 130px;max-width:1180px;margin:auto}
 
-/* ACHIEVEMENTS + DEVEX, laid out like the two-column contact screen */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:center;padding:120px 8vw;max-width:1280px;margin:auto}
+/* ACHIEVEMENTS + DEVEX, laid out like a two-column contact screen */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:center;padding:120px 8vw;max-width:1280px;margin:auto;
+  background:radial-gradient(50% 60% at 78% 50%,rgba(255,111,168,.08),transparent 70%)}
 .split > div:first-child{text-align:center;display:grid;justify-items:center;gap:20px}
-.split .panel{padding:52px 48px}
+.split .panel{padding:52px 48px;border-color:transparent;
+  background:linear-gradient(var(--panel),var(--panel)) padding-box,linear-gradient(140deg,rgba(255,111,168,.6),rgba(167,139,250,.3) 40%,var(--line) 75%) border-box}
 .split .panel .lead{margin:18px 0 34px}
 .facts{display:grid;gap:18px;margin-top:22px}
 .facts b{display:block;font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase}
 .facts span{font-size:.74rem;color:var(--mute)}
 
+/* FOOTER: a huge outlined wordmark that lights up under the cursor (fx.js sets --mx / --my) */
+footer{padding-top:0}
+.foot-word{display:block;font-size:clamp(2.6rem,9.4vw,11rem);padding:70px 2vw 18px;white-space:nowrap;overflow:hidden;user-select:none;
+  color:transparent;-webkit-text-stroke:1px rgba(242,242,243,.13);
+  background:radial-gradient(340px circle at var(--mx,-999px) var(--my,-999px),var(--pink),var(--violet) 45%,transparent 72%);
+  -webkit-background-clip:text;background-clip:text}
+
 /* MOTION: fade up on load and on scroll (only when the user allows motion) */
 @keyframes up{from{opacity:0;transform:translateY(18px)}}
-.motion .name,.motion .stats{animation:up .9s var(--ease) backwards}
-.motion .stats{animation-delay:.3s}
+.motion .name .pre,.motion .name .post{animation:up .9s var(--ease) .8s backwards}
+.motion .stats{animation:up .9s var(--ease) 1.1s backwards}
 .motion .reveal > *{opacity:0}
 .motion .reveal.shown > *{opacity:1;animation:rise .9s var(--ease) backwards;animation-delay:calc(var(--d,0) * 110ms)}
 @keyframes rise{from{opacity:0;transform:translateY(40px)}}
 
 @media (max-width:800px){.split{grid-template-columns:1fr;padding:90px 6vw}.split .panel{padding:40px 28px}}
-@media (max-width:640px){.name h1{font-size:10.8vw}.stats{gap:22px;bottom:36px}.name .pre{left:4%}.name .post{right:4%}.showcase{padding-top:110px}}
+@media (max-width:640px){.name h1{font-size:10.8vw}.stats{gap:22px;bottom:36px}.name .pre{left:4%}.name .post{right:4%}.showcase{padding-top:110px}.marquee{padding:18px 0}}
 </style>
 </head>
 <body>
 <nav class="nav" id="nav">
-  <a class="mark" href="#top"><img src="logo-mono.svg" alt="Pink Petal Studio"></a>
+  <a class="mark" href="#top"><img src="logo.svg" alt="Pink Petal Studio"></a>
   <ul>
     <li><a href="#games">Projects</a></li>
     <li><a href="devex.html">DevEx</a></li>
     <li><a href="#achievements">Achievements</a></li>
   </ul>
 </nav>
-<div class="rail left" id="rail" aria-label="Our games on Roblox"></div>
 <a class="rail right scroll" href="#games" id="cue">Scroll</a>
 
 <header class="hero" id="top">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <canvas class="petals" aria-hidden="true"></canvas>
   <div class="name">
-    <span class="caps pre">We are</span>
-    <h1 class="wide">Pink Petal</h1>
-    <span class="caps post">Game studio</span>
+    <span class="caps pre" data-scramble>We are</span>
+    <h1 class="wide" data-split>Pink Petal</h1>
+    <span class="caps post" data-scramble>Game studio</span>
   </div>
 
   <!-- STATS: values are filled in by the API (see CONFIG in shared.js) -->
@@ -87,6 +119,8 @@
     <div class="stat" data-key="games"><div class="num">–</div><div class="caps lbl">Games</div></div>
   </div>
 </header>
+
+<div class="marquee" aria-hidden="true"><div class="track" id="marquee"><div class="grp"><span>Game development</span><i>✦</i><span>Metaverse</span><i>✦</i><span>Digital experiences</span><i>✦</i></div></div></div>
 
 <section class="showcase reveal" id="games">
   <div class="collage" id="collage" aria-hidden="true"><figure></figure><figure></figure><figure></figure></div>
@@ -112,9 +146,13 @@
   </div>
 </section>
 
-<footer class="caps">© <span id="yr"></span> Pink Petal Studio</footer>
+<footer>
+  <div class="foot-word wide" data-spot aria-hidden="true">Pink Petal</div>
+  <p class="caps">© <span id="yr"></span> Pink Petal Studio</p>
+</footer>
 
 <script src="shared.js"></script>
+<script src="fx.js"></script>
 <script>
 const current = {};
 function show(key, value, format = fmt){
@@ -146,15 +184,18 @@ function renderGames(games){
   lastGamesHtml = html;
   document.getElementById('gameList').innerHTML = html;
 }
-// once: small game icons in the left rail, each game's launch date
+// marquee words: the tag line first, the game names join once they load
+const TAGS = ['Game development', 'Metaverse', 'Digital experiences'];
+window.PPFX?.marquee(document.getElementById('marquee'), TAGS);
+// once: each game's launch date, game names in the marquee
 let extrasDone = false;
 function renderExtras(games){
   if(extrasDone) return; extrasDone = true;
-  document.getElementById('rail').innerHTML = games.map(g => g.icon ? `<a href="https://www.roblox.com/games/${encodeURIComponent(g.rootPlaceId)}" target="_blank" rel="noopener" title="${esc(g.name)} on Roblox" aria-label="${esc(g.name)} on Roblox"><img src="${esc(g.icon)}" alt=""></a>` : '').join('');
   const day = d => new Date(d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
   document.getElementById('facts').innerHTML = games.map(g => `<div><b>${esc(g.name)}</b><span>Created ${day(g.created)} · ${fmt(g.visits)} visits</span></div>`).join('');
+  window.PPFX?.marquee(document.getElementById('marquee'), [...TAGS, ...games.map(g => g.name)]);
 }
-// once: three black-and-white screenshots for the showcase, taken in turn from each game (icons as a fallback)
+// once: three screenshots for the showcase, taken in turn from each game (icons as a fallback)
 let collageDone = false;
 async function renderCollage(games){
   if(collageDone) return;
@@ -202,8 +243,8 @@ function onScrollUi(){
 addEventListener('scroll', onScrollUi, {passive:true});
 onScrollUi();
 
-/* reveal sections as they scroll into view */
 if(document.documentElement.classList.contains('motion')){
+  /* reveal sections as they scroll into view */
   const io = new IntersectionObserver(es => es.forEach(e => {
     if(e.isIntersecting){ e.target.classList.add('shown'); io.unobserve(e.target); }
   }), {threshold:.12, rootMargin:'0px 0px -8% 0px'});
@@ -213,16 +254,23 @@ if(document.documentElement.classList.contains('motion')){
     io.observe(r);
   });
 
-  /* hero content drifting up and fading as you scroll past it */
-  const hero = document.querySelector('.hero');
+  /* hero content drifts up and fades as you scroll past it; the three screenshots move at different speeds */
+  const hero = document.querySelector('.hero'), showcase = document.getElementById('games');
   const layers = [['.name', .3], ['.stats', .12]].map(([q, k]) => [document.querySelector(q), k]);
+  const figs = [...document.querySelectorAll('#collage figure')], drift = [50, -35, 70];
   let ticking = false;
   function onScroll(){
     ticking = false;
     const y = Math.max(0, scrollY);
-    if(y > hero.offsetHeight) return;
-    const fade = Math.max(0, 1 - y / (hero.offsetHeight * .8));
-    layers.forEach(([el, k]) => { el.style.translate = `0 ${y * k}px`; el.style.opacity = fade; });
+    if(y <= hero.offsetHeight){
+      const fade = Math.max(0, 1 - y / (hero.offsetHeight * .8));
+      layers.forEach(([el, k]) => { el.style.translate = `0 ${y * k}px`; el.style.opacity = fade; });
+    }
+    const r = showcase.getBoundingClientRect();
+    if(r.bottom > 0 && r.top < innerHeight){
+      const p = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;   // about -1 … 1 while the section crosses the screen
+      figs.forEach((f, i) => { f.style.translate = `0 ${(p * drift[i]).toFixed(1)}px`; f.style.rotate = `${(p * (i - 1) * 3).toFixed(2)}deg`; });
+    }
   }
   addEventListener('scroll', () => { if(!ticking){ ticking = true; requestAnimationFrame(onScroll); } }, {passive:true});
   onScroll();
