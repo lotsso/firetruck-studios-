@@ -62,6 +62,12 @@ async function toUniverse(id){
   uniCache[id] = u;
   return { universeId: u, placeId: String(id) };
 }
+// Screenshots of each game (by universe ID): [[url, ...], ...] in the same order
+async function fetchShots(universeIds, count = 3){
+  const r = await rbx('thumbnails', `/v1/games/multiget/thumbnails?universeIds=${universeIds.join(',')}&countPerUniverse=${count}&size=768x432&format=Png`);
+  return universeIds.map(u => ((r.data||[]).find(x=>String(x.universeId)===String(u))?.thumbnails||[])
+    .filter(t=>t.state==='Completed' && t.imageUrl).map(t=>t.imageUrl));
+}
 async function fetchGames(){
   const ids = await Promise.all(CONFIG.games.map(toUniverse));
   const list = ids.map(i=>i.universeId).join(',');

@@ -8,6 +8,7 @@ const ROUTES = [
   { sub: 'games',      re: /^\/v1\/games\/votes$/,                     ttl: 60 },
   { sub: 'games',      re: /^\/v1\/games\/\d+\/servers\/Public$/,      ttl: 30 },
   { sub: 'thumbnails', re: /^\/v1\/games\/icons$/,                     ttl: 3600 },
+  { sub: 'thumbnails', re: /^\/v1\/games\/multiget\/thumbnails$/,      ttl: 3600 },   // screenshots
 ];
 const json = (o, status) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
 

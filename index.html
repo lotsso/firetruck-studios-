@@ -3,136 +3,116 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b0709">
+<meta name="theme-color" content="#0a0a0b">
 <title>Pink Petal Studio</title>
 <link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="alternate icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
 <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');</script>
 <style>
-:root{
-  --bg:#0b0709; --card:#140d12; --line:#2a1a25; --text:#f6eef3; --mute:#b9a3b1; --dim:#7d6876;
-  --accent:#ff6fa8; --leaf:#4ade80; --ease:cubic-bezier(.2,.8,.2,1);
-  --display:'Inter',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
-  color-scheme:dark;
-}
-*{box-sizing:border-box;margin:0}
-html{background:var(--bg)}
-html.motion{scroll-behavior:smooth}
-body{font-family:var(--body);color:var(--text);background:var(--bg);line-height:1.6}
-::selection{background:var(--accent);color:#000}
-a{color:inherit;text-decoration:none}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-
-/* NAV */
-nav{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 5vw;position:sticky;top:0;z-index:10;
-  background:rgba(11,7,9,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.logo{font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
-.logo img{width:34px;height:34px;display:block}
-nav ul{display:flex;gap:32px;list-style:none;font-weight:500}
-nav ul a{position:relative;color:var(--mute);transition:color .2s}
-nav ul a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--accent);
-  transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease)}
-nav ul a:hover{color:var(--text)}
-nav ul a:hover::after,nav ul a:focus-visible::after{transform:scaleX(1)}
-
 /* HERO */
-.hero{text-align:center;padding:130px 5vw 110px;border-bottom:1px solid var(--line);
-  background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(255,111,168,.10),transparent 70%)}
-.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(2.8rem,9vw,6.5rem);line-height:1;letter-spacing:-.05em}
-.hero h1 span{display:block;color:var(--accent)}
-.tags{margin:30px 0 40px;font-size:clamp(1rem,2vw,1.25rem);color:var(--mute);display:flex;gap:10px 28px;justify-content:center;flex-wrap:wrap}
-.btn{display:inline-block;padding:14px 30px;font-weight:600;background:var(--accent);color:#14060d;transition:background-color .2s,transform .2s var(--ease)}
-.btn:hover{background:#ff8bb9;transform:translateY(-2px)}
+.hero{min-height:100vh;min-height:100svh;display:grid;place-items:center;position:relative;padding:120px 4vw 150px;overflow:hidden}
+.name{position:relative;text-align:center}
+.name h1{font-size:clamp(2.1rem,8.6vw,9.5rem);white-space:nowrap}
+.name .pre{position:absolute;left:14%;bottom:100%;margin-bottom:1.6em}
+.name .post{position:absolute;right:12%;top:100%;margin-top:1.8em}
+.stats{position:absolute;left:0;right:0;bottom:48px;display:flex;justify-content:center;gap:clamp(28px,6vw,72px)}
+.stat{text-align:center}
+.stat .num{font-stretch:118%;font-weight:700;font-size:clamp(1.05rem,2vw,1.4rem);letter-spacing:.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .lbl{margin-top:4px;display:inline-flex;align-items:center;gap:8px;font-size:.56rem}
+.stat .lbl::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--dim)}
+.stats.live .lbl::before{background:var(--text);animation:ping 2s infinite}
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,220px));justify-content:center;gap:16px;margin-top:70px}
-.stat{min-width:0;padding:24px 12px;background:var(--card);border:1px solid var(--line);text-align:center;container-type:inline-size}
-.stat .num{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,16cqi,2.6rem);line-height:1.1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stat .lbl{margin-top:8px;font-size:.9rem;color:var(--mute);display:inline-flex;align-items:center;gap:8px}
-.stat .lbl::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--dim)}
-.stats.live .lbl::after{background:var(--leaf);animation:ping 2s infinite}
-@keyframes ping{0%{box-shadow:0 0 0 0 rgba(74,222,128,.5)}70%,100%{box-shadow:0 0 0 7px rgba(74,222,128,0)}}
+/* SHOWCASE: three photos with the big title over their bottom edge */
+.showcase{padding:150px 4vw 110px;text-align:center;border-top:1px solid var(--line)}
+.collage{display:flex;justify-content:center;align-items:flex-end;gap:clamp(12px,3vw,30px);width:min(560px,86vw);margin:0 auto}
+.collage figure{margin:0;overflow:hidden;background:var(--panel)}
+.collage figure:nth-child(odd){flex:0 0 28%;aspect-ratio:.88}
+.collage figure:nth-child(2){flex:0 0 32%;aspect-ratio:.78}
+.collage img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.15) brightness(.85);transition:filter .7s,transform 1s var(--ease)}
+.collage figure:hover img{filter:none;transform:scale(1.05)}
+.big{font-stretch:100%;font-weight:700;font-size:clamp(2.1rem,5.6vw,4.4rem);letter-spacing:.005em;margin-top:-.5em;position:relative;z-index:1;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+.sub{margin:16px 0 34px;font-size:.56rem}
 
-/* SECTIONS */
-section.block{padding:100px 5vw;max-width:1100px;margin:auto}
-section.block + section.block{border-top:1px solid var(--line)}
-h2{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,4.5vw,2.6rem);letter-spacing:-.04em;margin-bottom:8px}
-h2::before{content:"";display:block;width:36px;height:3px;margin-bottom:16px;background:var(--accent);transform-origin:left;transition:transform .8s .25s var(--ease)}
-.lead{max-width:60ch;margin-bottom:40px;color:var(--mute)}
+/* GAME LIST */
+.games{padding:20px 4vw 130px;max-width:1180px;margin:auto}
 
-/* GAMES */
-.gl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,280px));gap:16px}
-.gcard{position:relative;display:block;aspect-ratio:1;overflow:hidden;background:var(--card);border:1px solid var(--line);
-  transition:border-color .25s,transform .25s var(--ease)}
-.gcard:hover{border-color:var(--accent);transform:translateY(-3px)}
-.gcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
-.gcard:hover img{transform:scale(1.05)}
-.gcard .info{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;background:linear-gradient(transparent,rgba(8,5,7,.92) 45%)}
-.gcard h3{font-family:var(--display);font-weight:700;font-size:1.05rem;line-height:1.3;letter-spacing:-.01em;margin-bottom:4px}
-.gcard .meta{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:.82rem;color:var(--mute)}
-.gcard .meta b{color:var(--text);font-weight:600}
-.gcard .live{width:7px;height:7px;border-radius:50%;background:var(--leaf);display:inline-block;margin-right:6px;vertical-align:middle;animation:ping 2s infinite}
-footer{text-align:center;padding:30px;color:var(--dim);font-size:.9rem;border-top:1px solid var(--line)}
+/* ACHIEVEMENTS + DEVEX, laid out like the two-column contact screen */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:center;padding:120px 8vw;max-width:1280px;margin:auto}
+.split > div:first-child{text-align:center;display:grid;justify-items:center;gap:20px}
+.split .panel{padding:52px 48px}
+.split .panel .lead{margin:18px 0 34px}
+.facts{display:grid;gap:18px;margin-top:22px}
+.facts b{display:block;font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase}
+.facts span{font-size:.74rem;color:var(--mute)}
 
 /* MOTION: fade up on load and on scroll (only when the user allows motion) */
 @keyframes up{from{opacity:0;transform:translateY(18px)}}
-.motion .hero h1,.motion .tags,.motion .hero .btn,.motion .stats{animation:up .8s var(--ease) backwards}
-.motion .tags{animation-delay:.12s}
-.motion .hero .btn{animation-delay:.24s}
-.motion .stats{animation-delay:.36s}
+.motion .name,.motion .stats{animation:up .9s var(--ease) backwards}
+.motion .stats{animation-delay:.3s}
 .motion .reveal > *{opacity:0}
 .motion .reveal.shown > *{opacity:1;animation:rise .9s var(--ease) backwards;animation-delay:calc(var(--d,0) * 110ms)}
-.motion .reveal.shown > .gl{animation-name:tile}
-@keyframes rise{from{opacity:0;transform:translateY(48px)}}
-@keyframes tile{from{opacity:0;transform:translateY(60px) scale(.94)}}
-.motion .reveal h2::before{transform:scaleX(0)}
-.motion .reveal.shown h2::before{transform:scaleX(1)}
-/* scroll progress line */
-#progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:20;background:var(--accent);transform-origin:left;transform:scaleX(var(--p,0));pointer-events:none}
+@keyframes rise{from{opacity:0;transform:translateY(40px)}}
 
-@media (max-width:640px){nav ul{gap:16px;font-size:.9rem}.logo span,nav .wide{display:none}.stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:16px 4px}.gl{grid-template-columns:minmax(0,340px)}.stat .lbl{font-size:.72rem;gap:5px}}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (max-width:800px){.split{grid-template-columns:1fr;padding:90px 6vw}.split .panel{padding:40px 28px}}
+@media (max-width:640px){.name h1{font-size:10.8vw}.stats{gap:22px;bottom:36px}.name .pre{left:4%}.name .post{right:4%}.showcase{padding-top:110px}}
 </style>
 </head>
 <body>
-<div id="progress" aria-hidden="true"></div>
-
-<nav>
-  <a class="logo" href="#"><img src="logo.svg" alt="Pink Petal Studio logo"><span>Pink Petal Studio</span></a>
+<nav class="nav" id="nav">
+  <a class="mark" href="#top"><img src="logo-mono.svg" alt="Pink Petal Studio"></a>
   <ul>
-    <li><a href="#games">Portfolio</a></li>
-    <li><a href="devex.html">DevEx<span class="wide"> calculator</span></a></li>
+    <li><a href="#games">Projects</a></li>
+    <li><a href="devex.html">DevEx</a></li>
     <li><a href="#achievements">Achievements</a></li>
   </ul>
 </nav>
+<div class="rail left" id="rail" aria-label="Our games on Roblox"></div>
+<a class="rail right scroll" href="#games" id="cue">Scroll</a>
 
-<header class="hero">
-  <h1>Pink Petal <span>Studio</span></h1>
-  <p class="tags"><span>Game development</span><span>Metaverse</span><span>Digital experiences</span></p>
-  <a class="btn" href="#games">Explore projects</a>
+<header class="hero" id="top">
+  <div class="name">
+    <span class="caps pre">We are</span>
+    <h1 class="wide">Pink Petal</h1>
+    <span class="caps post">Game studio</span>
+  </div>
 
   <!-- STATS: values are filled in by the API (see CONFIG in shared.js) -->
   <div class="stats" id="stats" aria-live="polite">
-    <div class="stat" data-key="totalVisits"><div class="num">–</div><div class="lbl">Total visits</div></div>
-    <div class="stat" data-key="playersOnline"><div class="num">–</div><div class="lbl">Players online</div></div>
-    <div class="stat" data-key="games"><div class="num">–</div><div class="lbl">Games</div></div>
+    <div class="stat" data-key="totalVisits"><div class="num">–</div><div class="caps lbl">Total visits</div></div>
+    <div class="stat" data-key="playersOnline"><div class="num">–</div><div class="caps lbl">Players online</div></div>
+    <div class="stat" data-key="games"><div class="num">–</div><div class="caps lbl">Games</div></div>
   </div>
 </header>
 
-<section class="block reveal" id="games">
-  <h2>Our games</h2>
-  <p class="lead">Click a game to see its full statistics.</p>
-  <div class="gl" id="gameList"><p class="lead">Loading games…</p></div>
+<section class="showcase reveal" id="games">
+  <div class="collage" id="collage" aria-hidden="true"><figure></figure><figure></figure><figure></figure></div>
+  <h2 class="wide big">Our games</h2>
+  <p class="caps sub">Game development · Metaverse · Digital experiences</p>
+  <a class="btn" href="#list">View projects</a>
 </section>
 
-<section class="block reveal" id="achievements">
-  <h2>Achievements</h2>
-  <p class="lead">A place for awards, player records and platform recognition. Add your own here.</p>
+<section class="games reveal" id="list" aria-label="Games">
+  <div class="gl" id="gameList"><p class="caps">Loading games…</p></div>
 </section>
 
-<footer>© <span id="yr"></span> Pink Petal Studio</footer>
+<section class="split reveal" id="achievements">
+  <div>
+    <h2 class="title">Achievements</h2>
+    <p class="lead">A place for awards, player records and platform recognition. Add your own here.</p>
+    <div class="facts" id="facts"></div>
+  </div>
+  <div class="panel">
+    <h2 class="title">DevEx calculator</h2>
+    <p class="lead">Pick a game, enter the Robux it earned and see how much each person can cash out.</p>
+    <a class="btn" href="devex.html">Open calculator</a>
+  </div>
+</section>
+
+<footer class="caps">© <span id="yr"></span> Pink Petal Studio</footer>
 
 <script src="shared.js"></script>
 <script>
@@ -152,7 +132,7 @@ let lastGamesHtml = '';
 function renderGames(games){
   const html = games.map(g => `
     <a class="gcard" href="stats.html?id=${encodeURIComponent(g.inputId)}">
-      ${g.icon ? `<img src="${esc(g.icon)}" alt="" loading="lazy">` : ''}
+      <div class="img">${g.icon ? `<img src="${esc(g.icon)}" alt="" loading="lazy">` : '<div class="ph"><img src="logo-mono.svg" alt=""></div>'}</div>
       <div class="info">
         <h3>${esc(g.name)}</h3>
         <div class="meta">
@@ -166,6 +146,27 @@ function renderGames(games){
   lastGamesHtml = html;
   document.getElementById('gameList').innerHTML = html;
 }
+// once: small game icons in the left rail, each game's launch date
+let extrasDone = false;
+function renderExtras(games){
+  if(extrasDone) return; extrasDone = true;
+  document.getElementById('rail').innerHTML = games.map(g => g.icon ? `<a href="https://www.roblox.com/games/${encodeURIComponent(g.rootPlaceId)}" target="_blank" rel="noopener" title="${esc(g.name)} on Roblox" aria-label="${esc(g.name)} on Roblox"><img src="${esc(g.icon)}" alt=""></a>` : '').join('');
+  const day = d => new Date(d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('facts').innerHTML = games.map(g => `<div><b>${esc(g.name)}</b><span>Created ${day(g.created)} · ${fmt(g.visits)} visits</span></div>`).join('');
+}
+// once: three black-and-white screenshots for the showcase, taken in turn from each game (icons as a fallback)
+let collageDone = false;
+async function renderCollage(games){
+  if(collageDone) return;
+  let shots = [];
+  try{ shots = await fetchShots(games.map(g => g.id)); }catch(e){ console.warn('Could not fetch screenshots:', e); }
+  const pics = [];
+  for(let i = 0; i < 3 && pics.length < 3; i++) shots.forEach(s => { if(s[i] && pics.length < 3) pics.push(s[i]); });
+  games.forEach(g => { if(g.icon && pics.length < 3) pics.push(g.icon); });
+  if(!pics.length) return;                    // try again on the next refresh
+  collageDone = true;
+  document.querySelectorAll('#collage figure').forEach((f, i) => { if(pics[i]) f.innerHTML = `<img src="${esc(pics[i])}" alt="" loading="lazy">`; });
+}
 async function loadStats(){
   const box = document.getElementById('stats');
   try{
@@ -176,11 +177,13 @@ async function loadStats(){
     show('playersOnline', games.reduce((a,g)=>a+g.playing,0), n => nf.format(Math.round(n)));
     show('games',         games.length,                       n => nf.format(Math.round(n)));
     renderGames(games);
+    renderExtras(games);
+    renderCollage(games);
   }catch(err){
     console.warn('Could not fetch data from Roblox:', err);
     box.classList.remove('live');
     if(!document.querySelector('.gcard')) document.getElementById('gameList').innerHTML =
-      '<p class="lead">Could not load the games. Check the IDs in shared.js.</p>';
+      '<p class="caps">Could not load the games. Check the IDs in shared.js.</p>';
   }
 }
 loadStats();
@@ -188,6 +191,16 @@ if(CONFIG.refreshMs) setInterval(loadStats, CONFIG.refreshMs);
 </script>
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
+
+/* solid nav after the hero starts scrolling, "scroll" cue hidden near the end of the page */
+const nav = document.getElementById('nav'), cue = document.getElementById('cue');
+function onScrollUi(){
+  const d = document.documentElement;
+  nav.classList.toggle('solid', scrollY > 40);
+  cue.classList.toggle('gone', scrollY + innerHeight > d.scrollHeight - 200);
+}
+addEventListener('scroll', onScrollUi, {passive:true});
+onScrollUi();
 
 /* reveal sections as they scroll into view */
 if(document.documentElement.classList.contains('motion')){
@@ -200,17 +213,15 @@ if(document.documentElement.classList.contains('motion')){
     io.observe(r);
   });
 
-  /* scroll progress + hero content drifting up and fading as you scroll past it */
-  const bar = document.getElementById('progress'), hero = document.querySelector('.hero');
-  const layers = [['.hero h1', .35], ['.tags', .25], ['.hero .btn', .18], ['.stats', .1]]
-    .map(([q, k]) => [document.querySelector(q), k]);
+  /* hero content drifting up and fading as you scroll past it */
+  const hero = document.querySelector('.hero');
+  const layers = [['.name', .3], ['.stats', .12]].map(([q, k]) => [document.querySelector(q), k]);
   let ticking = false;
   function onScroll(){
     ticking = false;
-    const d = document.documentElement, max = d.scrollHeight - d.clientHeight, y = Math.max(0, scrollY);
-    bar.style.setProperty('--p', max > 0 ? Math.min(1, y / max) : 0);
+    const y = Math.max(0, scrollY);
     if(y > hero.offsetHeight) return;
-    const fade = Math.max(0, 1 - y / (hero.offsetHeight * .85));
+    const fade = Math.max(0, 1 - y / (hero.offsetHeight * .8));
     layers.forEach(([el, k]) => { el.style.translate = `0 ${y * k}px`; el.style.opacity = fade; });
   }
   addEventListener('scroll', () => { if(!ticking){ ticking = true; requestAnimationFrame(onScroll); } }, {passive:true});
