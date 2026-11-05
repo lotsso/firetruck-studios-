@@ -200,7 +200,7 @@
   /* ---------- falling petals on a <canvas class="petals">: they dodge the cursor, a click makes them burst ---------- */
   function petals(canvas) {
     const host = canvas.parentElement, ctx = canvas.getContext('2d');
-    const COLORS = ['#ffb3d1', '#ff8fbd', '#ff6fa8', '#f0abfc', '#c4b5fd'];
+    const COLORS = ['#ffb3d1', '#ff8fbd', '#ff6fa8', '#e9dfe4'];     // pinks of the logo + one pale, nothing else
     let W = 0, H = 0, list = [], burst = [], raf = 0, last = 0, seen = true, mx = -1e4, my = -1e4;
     const make = top => ({
       x: rand(0, W), y: top ? rand(-40, -10) : rand(-20, H), s: rand(5, 11), vy: rand(.25, .7), vx: rand(-.15, .15),
