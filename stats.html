@@ -203,7 +203,7 @@ function renderCcu(){
   const n=PERIODS[period], el=document.getElementById('chart'), note=document.getElementById('chartNote');
   let pts, end;
   if(hasCcu()){ pts=ccuData.points; end=ccuData.now; note.textContent='Recorded every minute by the Worker, even when nobody has this page open. Older than 2 days: highest value per 15 minutes.'; }
-  else { pts=localHist; end=Date.now(); note.textContent='Without the Worker, history is built only from samples collected in this browser while the page is open (7 days max).'; }
+  else { pts=localHist; end=Date.now(); note.textContent='History is built only from samples collected in this browser while the page is open (7 days max).'; }
   const [cur,prev]=split(pts,n||90,end);
   drawChart(el,cur,prev,'int',n||90);
 }
@@ -249,6 +249,11 @@ async function loadCreator(){
   if(!CONFIG.workerUrl){
     an=null; renderKpis();
     note.textContent='To see DAU, playtime, revenue, conversion, ARPPU, play through rate and retention, deploy worker.js and set its address in workerUrl (shared.js).';
+    return;
+  }
+  if(gid !== CONFIG.games[0]){             // the Worker (UNIVERSE_ID) serves only the first game's analytics and CCU
+    an=null; renderKpis();
+    note.textContent='Creator analytics are set up only for '+(CONFIG.names?.[CONFIG.games[0]]||'the first game')+'.';
     return;
   }
   if(an){ renderKpis(); return; }          // data is already loaded: switching periods just re-filters it

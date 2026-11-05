@@ -2,15 +2,16 @@
    CONFIG – shared by index.html and stats.html
    ============================================================ */
 const CONFIG = {
-  games: ['75987095614345'],   // Roblox game IDs
-  names: { '75987095614345': '+1 Firefighter Evolution', soon: 'Soon' },   // optional display names (Roblox returns the original title)
+  // Roblox game IDs. The first one is the game the Worker tracks (creator analytics + per-minute CCU).
+  games: ['75987095614345', '99106007678581'],
+  names: { '75987095614345': '+1 Firefighter Evolution', '99106007678581': 'Destroy a Brick!' },   // optional display names (Roblox returns the original title)
   idType: 'place',             // 'place' (the ID from the game link) or 'universe'
   apiDomain: 'roproxy.com',    // CORS proxy; put your own proxy here
   refreshMs: 30000,
 
   // DevEx calculator (devex.html): revenue split per game ID, in percent.
   // Games not on Roblox yet use any other key and get their name from `names`.
-  payouts: { '75987095614345': { lotos: 5, lolcix: 45, partner: 50 }, soon: { lotos: 30, lolcix: 70 } },
+  payouts: { '75987095614345': { lotos: 5, lolcix: 45, partner: 50 }, '99106007678581': { lotos: 30, lolcix: 70 } },
   robuxUsd: 0.004,             // USD paid per Robux
   usdPln: 3.9,                 // used only if the live NBP exchange rate can't be fetched
 
@@ -38,12 +39,22 @@ async function latestCcu(){
     return r.v != null && r.now - r.t < 3*6e4 ? r.v : null;
   }catch(e){ return null; }
 }
+// place -> universe never changes, so remember it (memory + localStorage) instead of asking the proxy every refresh
+const uniCache = {};
 async function toUniverse(id){
   if(CONFIG.idType === 'universe') return { universeId: String(id), placeId: null };
-  try{
-    const r = await getJSON(api('apis', `/universes/v1/places/${id}/universe`));
-    return { universeId: String(r.universeId), placeId: String(id) };
-  }catch(e){ return { universeId: String(id), placeId: null }; }
+  let u = uniCache[id];
+  if(!u){ try{ u = localStorage.getItem('ppc_uni_'+id); }catch(e){} }
+  if(!u){
+    try{
+      const r = await getJSON(api('apis', `/universes/v1/places/${id}/universe`));
+      if(!r.universeId) throw new Error('no universeId');
+      u = String(r.universeId);
+      try{ localStorage.setItem('ppc_uni_'+id, u); }catch(e){}
+    }catch(e){ return { universeId: String(id), placeId: null }; }
+  }
+  uniCache[id] = u;
+  return { universeId: u, placeId: String(id) };
 }
 async function fetchGames(){
   const ids = await Promise.all(CONFIG.games.map(toUniverse));
@@ -53,9 +64,13 @@ async function fetchGames(){
     getJSON(api('thumbnails', `/v1/games/icons?universeIds=${list}&returnPolicy=PlaceHolder&size=256x256&format=Png&isCircular=false`)).catch(()=>({data:[]})),
     latestCcu()
   ]);
-  return info.data.map((g,i) => ({
-    ...g, inputId: CONFIG.games[i], name: CONFIG.names?.[CONFIG.games[i]] || g.name,
-    playing: i === 0 && live != null ? live : g.playing,
-    icon: (icons.data.find(x=>x.targetId===g.id)||{}).imageUrl
-  }));
+  // match by universe ID, not by position: Roblox doesn't promise to keep the requested order
+  return ids.map((u,i) => {
+    const g = info.data.find(x=>String(x.id)===u.universeId);
+    return g && {
+      ...g, inputId: CONFIG.games[i], name: CONFIG.names?.[CONFIG.games[i]] || g.name,
+      playing: i === 0 && live != null ? live : g.playing,
+      icon: (icons.data.find(x=>x.targetId===g.id)||{}).imageUrl
+    };
+  }).filter(Boolean);
 }
